@@ -1,5 +1,11 @@
 <aside class="sidebar d-flex flex-column">
-    <div class="brand">TAMS</div>
+    <a href="{{ route('dashboard') }}" class="brand" aria-label="TAMS - ke Dashboard">
+    <img src="{{ asset('images/logo-icon.svg') }}" alt="Logo TAMS">
+    <span>
+        <span class="brand-name">TAMS</span>
+        <span class="brand-sub">Assets Management</span>
+    </span>
+    </a>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
             <i class="bi bi-speedometer2 me-2"></i> Dashboard

@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Masuk - TAMS</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo-icon.svg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body { background:#F1F5F9; font-family:Inter, Arial, sans-serif; min-height:100vh; }
         .login-card { width:100%; max-width:400px; background:#fff; border:1px solid #E2E8F0; border-radius:12px; }
-        .brand { color:#2563EB; font-size:28px; font-weight:700; }
+        .brand { color:#1E3A8A; font-size:26px; font-weight:700; letter-spacing:2px; }
         .btn-primary { background:#2563EB; border-color:#2563EB; }
         .form-control { height:44px; }
     </style>
@@ -18,6 +19,7 @@
 
 <div class="login-card p-4 p-sm-5">
     <div class="text-center mb-4">
+        <img src="{{ asset('images/logo-icon.svg') }}" alt="Logo TAMS" width="64" height="64" class="mb-3">
         <div class="brand">TAMS</div>
         <div class="text-muted small">Technolife Assets Management System</div>
     </div>

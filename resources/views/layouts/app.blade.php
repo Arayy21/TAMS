@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'TAMS') - TAMS</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo-icon.svg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root { --primary:#2563EB; --sidebar:#1E293B; --bg:#F1F5F9; --muted:#64748B; }
         body { background:var(--bg); font-family:Inter, Arial, sans-serif; }
         .sidebar { width:220px; min-height:100vh; background:var(--sidebar); position:fixed; top:0; left:0; z-index:1030; }
-        .sidebar .brand { color:#fff; font-size:22px; font-weight:700; padding:20px 24px; }
+        .sidebar .brand { display:flex; align-items:center; gap:12px; padding:20px 20px 18px; margin-bottom:8px;
+                  border-bottom:1px solid rgba(255,255,255,.08); text-decoration:none; }
+        .sidebar .brand img { width:40px; height:40px; flex-shrink:0; }
+        .brand-name { display:block; color:#fff; font-size:20px; font-weight:700; letter-spacing:1.5px; line-height:1.1; }
+        .brand-sub  { display:block; color:#94A3B8; font-size:10.5px; font-weight:500; letter-spacing:.4px; margin-top:3px; }
         .sidebar .nav-link { color:#94A3B8; margin:2px 12px; padding:10px 16px; border-radius:8px; font-size:14px; font-weight:500; }
         .sidebar .nav-link:hover { color:#fff; background:rgba(255,255,255,.06); }
         .sidebar .nav-link.active { color:#fff; background:var(--primary); }
