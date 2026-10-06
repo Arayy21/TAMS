@@ -51,6 +51,9 @@
             <thead class="table-light">
                 <tr>
                     <th>Kode</th><th>Nama Aset</th><th>Kategori</th><th>Lokasi</th>
+                    <th class="text-center">Jumlah</th>
+                    <th class="text-center">Dipinjam</th>
+                    <th class="text-center">Tersedia</th>
                     <th>Kondisi</th><th>Status</th><th class="text-end">Aksi</th>
                 </tr>
             </thead>
@@ -61,6 +64,15 @@
                         <td>{{ $a->name }}</td>
                         <td>{{ $a->category->name }}</td>
                         <td>{{ $a->location->name }}</td>
+                        @php
+                            $borrowed  = (int) $a->borrowed_sum;
+                            $available = max(0, $a->quantity - $borrowed);
+                        @endphp
+                        <td class="text-center fw-semibold">{{ $a->quantity }}</td>
+                        <td class="text-center">{{ $borrowed }}</td>
+                        <td class="text-center">
+                            <span class="badge rounded-pill text-bg-{{ $available === 0 ? 'danger' : 'success' }}">{{ $available }}</span>
+                        </td>
                         <td><span class="badge rounded-pill text-bg-{{ $a->condition_color }}">{{ ucfirst($a->asset_condition) }}</span></td>
                         <td><span class="badge rounded-pill text-bg-{{ $a->status_color }}">{{ ucfirst($a->status) }}</span></td>
                         <td class="text-end">
@@ -70,7 +82,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-5">
+                        <td colspan="10" class="text-center text-muted py-5">
                             <i class="bi bi-inbox fs-1"></i>
                             <p class="mb-0">Tidak ada aset ditemukan.</p>
                         </td>

@@ -1,4 +1,4 @@
-@foreach (['success' => 'success', 'error' => 'danger', 'info' => 'info'] as $key => $color)
+@foreach (['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'] as $key => $color)
     @if (session($key))
         <div class="alert alert-{{ $color }} alert-dismissible fade show" role="alert">
             {{ session($key) }}

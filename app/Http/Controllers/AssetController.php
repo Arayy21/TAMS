@@ -14,6 +14,7 @@ class AssetController extends Controller
     public function index(Request $request)
     {
         $assets = Asset::with(['category', 'location'])
+            ->withSum(['loans as borrowed_sum' => fn ($q) => $q->whereNull('returned_at')], 'quantity')
             ->when($request->q, fn ($q, $v) => $q->where(
                 fn ($w) => $w->where('asset_code', 'like', "%{$v}%")->orWhere('name', 'like', "%{$v}%")
             ))
@@ -79,6 +80,11 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset)
     {
+        if ((int) $request->quantity < $asset->borrowed) {
+            return back()->withInput()->withErrors([
+                'quantity' => "Jumlah tidak boleh kurang dari unit yang sedang dipinjam ({$asset->borrowed}).",
+            ]);
+        }
         $asset->fill($this->validated($request));
         $dirty = $asset->getDirty();
         $old   = $asset->getOriginal();
@@ -121,6 +127,7 @@ class AssetController extends Controller
             'description'     => 'nullable|string|max:1000',
             'serial_number'   => 'nullable|string|max:100',
             'purchase_date'   => 'nullable|date',
+            'quantity'        => 'required|integer|min:1|max:100000',
         ]);
     }
 
@@ -130,6 +137,12 @@ class AssetController extends Controller
         $general = [];
 
         foreach ($dirty as $field => $new) {
+    // Perubahan jumlah dicatat dengan nilai lama dan baru
+            if ($field === 'quantity') {
+                $this->log($asset, 'update', 'quantity', (string) ($old['quantity'] ?? ''), (string) $new, 'Jumlah unit diubah');
+                continue;
+            }
+
             if (! isset($special[$field])) {
                 $general[] = $field;
                 continue;

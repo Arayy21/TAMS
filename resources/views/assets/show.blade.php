@@ -33,6 +33,7 @@
                     'Nomor Seri' => $asset->serial_number ?? '-',
                     'Tanggal Pembelian' => $asset->purchase_date?->translatedFormat('d F Y') ?? '-',
                     'Dicatat' => $asset->created_at?->translatedFormat('d F Y') ?? '-',
+                    'Jumlah Unit' => $asset->quantity . ' (tersedia ' . $asset->available . ')',
                 ] as $label => $value)
                     <div class="col-sm-6">
                         <div class="text-muted small">{{ $label }}</div>
@@ -60,7 +61,9 @@
 <div class="card-tams p-4">
     <div class="d-flex justify-content-between mb-3">
         <h2 class="h6 fw-semibold mb-0">Riwayat Aset (10 terbaru)</h2>
-        <a href="{{ route('histories.index', ['q' => $asset->asset_code]) }}" class="small text-decoration-none">Lihat semua</a>
+        @if (auth()->user()->isAdmin())
+            <a href="{{ route('histories.index', ['q' => $asset->asset_code]) }}" class="small text-decoration-none">Lihat semua</a>
+        @endif
     </div>
     <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">

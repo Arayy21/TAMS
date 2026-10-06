@@ -29,4 +29,34 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->role === 'admin' ? 'Admin' : 'Pengguna';
+    }  
+    
+    public function getInitialsAttribute(): string
+    {
+        $words = preg_split('/\s+/', trim($this->name)) ?: [];
+        $first = mb_substr($words[0] ?? '', 0, 1);
+
+        // Dua kata atau lebih: huruf pertama kata awal + kata akhir. Satu kata: dua huruf pertama
+        $second = count($words) > 1
+            ? mb_substr(end($words), 0, 1)
+            : mb_substr($words[0] ?? '', 1, 1);
+
+        return mb_strtoupper($first . $second);
+    }
+
+    public function getAvatarColorAttribute(): string
+    {
+        $colors = ['#2563EB', '#7C3AED', '#0891B2', '#16A34A', '#D97706', '#DB2777'];
+
+        return $colors[abs(crc32($this->email)) % count($colors)];
+    }
 }

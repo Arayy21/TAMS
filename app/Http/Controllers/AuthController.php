@@ -43,7 +43,9 @@ class AuthController extends Controller
             RateLimiter::clear($key);
             $request->session()->regenerate();
 
-            return redirect()->intended(route('dashboard'));
+            $home = $request->user()->isAdmin() ? route('dashboard') : route('assets.index');
+
+            return redirect()->intended($home); 
         }
 
         RateLimiter::hit($key, 60);

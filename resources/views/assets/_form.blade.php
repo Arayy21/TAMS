@@ -55,6 +55,13 @@
 
     {{-- Dua kolom di bawah PERLU DIKONFIRMASI KE PERUSAHAAN (wajib atau tidak) --}}
     <div class="col-md-6">
+        <div class="col-md-6">
+            <label class="form-label">Jumlah Unit <span class="text-danger">*</span></label>
+            <input type="number" name="quantity" min="1" value="{{ old('quantity', $a->quantity ?? 1) }}"
+                class="form-control @error('quantity') is-invalid @enderror">
+            @error('quantity') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            <div class="form-text">Jumlah total unit untuk aset ini.</div>
+        </div>
         <label class="form-label">Nomor Seri <span class="text-muted">(opsional)</span></label>
         <input type="text" name="serial_number" value="{{ old('serial_number', $a->serial_number ?? '') }}" class="form-control @error('serial_number') is-invalid @enderror">
         @error('serial_number') <div class="invalid-feedback">{{ $message }}</div> @enderror

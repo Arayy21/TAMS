@@ -10,7 +10,7 @@ class Asset extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'asset_code', 'name', 'category_id', 'location_id',
+        'asset_code', 'name', 'category_id', 'location_id', 'quantity',
         'asset_condition', 'status', 'description',
         'serial_number', 'purchase_date', 'created_by', 'updated_by',
     ];
@@ -31,6 +31,24 @@ class Asset extends Model
     {
         return $this->hasMany(AssetHistory::class)->orderByDesc('id');
     }
+
+    public function loans()
+    {
+        return $this->hasMany(Loan::class);
+    }
+
+    // Jumlah unit yang sedang dipinjam
+    public function getBorrowedAttribute(): int
+    {
+        return (int) $this->loans()->whereNull('returned_at')->sum('quantity');
+    }
+
+    // Sisa unit yang tersedia
+    public function getAvailableAttribute(): int
+    {
+        return max(0, $this->quantity - $this->borrowed);
+    }
+
 
     // Warna badge Bootstrap
     public function getConditionColorAttribute(): string

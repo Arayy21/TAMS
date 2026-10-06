@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
     'no-back' => \App\Http\Middleware\PreventBackHistory::class,
+    'role'    => \App\Http\Middleware\EnsureRole::class,
     ]);
         //
     })
