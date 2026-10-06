@@ -19,6 +19,7 @@
                 <tr>
                     <th>Kode</th><th>Nama Sesi</th><th>Tanggal</th><th>Cakupan</th>
                     <th style="min-width:160px">Progres</th><th>Status</th><th>Dibuat oleh</th>
+                    <th class="text-end">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,6 +38,11 @@
                         </td>
                         <td><span class="badge rounded-pill text-bg-{{ $o->status_color }}">{{ $o->status_label }}</span></td>
                         <td>{{ $o->creator->name ?? '-' }}</td>
+                        <td class="text-end">
+                        <a href="{{ route('opnames.show', $o) }}" class="btn btn-sm {{ $o->is_running ? 'btn-primary' : 'btn-outline-secondary' }}">
+                            {{ $o->is_running ? 'Isi Hasil' : 'Lihat' }}
+                        </a>
+                    </td>
                     </tr>
                 @empty
                     <tr>

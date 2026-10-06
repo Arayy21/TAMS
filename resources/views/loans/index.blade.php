@@ -5,9 +5,9 @@
 @php
     $isAdmin = auth()->user()->isAdmin();
     $cards = [
-        ['Peminjaman Aktif',     $summary['aktif'],     '#2563EB'],
+        ['Peminjaman Aktif',     $summary['aktif'],     '#DC143C'],
         ['Unit Sedang Dipinjam', $summary['unit'],      '#D97706'],
-        ['Terlambat',            $summary['terlambat'], '#DC2626'],
+        ['Terlambat',            $summary['terlambat'], '#BA1A1A'],
     ];
 @endphp
 

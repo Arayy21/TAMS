@@ -17,6 +17,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpWord\IOFactory;
 use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Settings;
+use App\Models\StockOpname;
+use App\Models\StockOpnameItem;
 
 class ReportController extends Controller
 {
@@ -25,10 +27,13 @@ class ReportController extends Controller
         $type = $this->type($request);
 
         return view('reports.index', [
-            'type'       => $type,
-            'data'       => $this->rows($request, $type),
-            'categories' => Category::orderBy('name')->get(),
-            'locations'  => Location::orderBy('name')->get(),
+            'type'           => $type,
+            'data'           => $this->rows($request, $type),
+            'categories'     => Category::orderBy('name')->get(),
+            'locations'      => Location::orderBy('name')->get(),
+            'opnames'        => StockOpname::orderByDesc('id')->get(),
+            'selectedOpname' => $type === 'opname' ? $this->opnameFor($request) : null,
+            'filters'        => $this->filterText($request, $type),
         ]);
     }
 
@@ -38,7 +43,7 @@ class ReportController extends Controller
 
         return view('reports.print', [
             'type'    => $type,
-            'title'   => $type === 'aset' ? 'Laporan Daftar Aset' : 'Laporan Peminjaman Aset',
+            'title'   => $this->title($type),
             'data'    => $this->rows($request, $type),
             'filters' => $this->filterText($request, $type),
         ]);
@@ -47,19 +52,35 @@ class ReportController extends Controller
     private function type(Request $request): string
     {
         $request->validate([
-            'jenis'  => 'nullable|in:aset,peminjaman',
-            'dari'   => 'nullable|date',
-            'sampai' => 'nullable|date|after_or_equal:dari',
+            'jenis'     => 'nullable|in:aset,peminjaman,opname',
+            'dari'      => 'nullable|date',
+            'sampai'    => 'nullable|date|after_or_equal:dari',
+            'opname_id' => 'nullable|exists:stock_opnames,id',
+            'hasil'     => 'nullable|in:selisih,belum',
         ], [
             'sampai.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal awal.',
+            'opname_id.exists'      => 'Sesi opname tidak ditemukan.',
         ]);
 
         return $request->input('jenis', 'aset');
     }
 
+    private function title(string $type): string
+    {
+        return match ($type) {
+            'opname'     => 'Laporan Hasil Stok Opname',
+            'peminjaman' => 'Laporan Peminjaman Aset',
+            default      => 'Laporan Daftar Aset',
+        };
+    }
+
     private function rows(Request $request, string $type)
     {
-        return $type === 'aset' ? $this->assetRows($request) : $this->loanRows($request);
+        return match ($type) {
+            'aset'   => $this->assetRows($request),
+            'opname' => $this->opnameRows($request),
+            default  => $this->loanRows($request),
+        };
     }
 
     private function assetRows(Request $request)
@@ -102,6 +123,19 @@ class ReportController extends Controller
             if ($request->location_id) $f['Lokasi']   = Location::find($request->location_id)?->name;
             if ($request->condition)   $f['Kondisi']  = ucfirst($request->condition);
             if ($request->status)      $f['Status']   = ucfirst($request->status);
+        } elseif ($type === 'opname') {
+            if ($o = $this->opnameFor($request)) {
+                $f['Sesi']    = $o->code . ' - ' . $o->name;
+                $f['Tanggal'] = $o->opname_date->format('d M Y');
+                $f['Cakupan'] = $o->location->name ?? 'Seluruh aset';
+                $f['Status']  = $o->status_label . ($o->is_running ? '' : ($o->adjustments_applied ? ' (diterapkan ke data aset)' : ' (hanya dicatat)'));
+            } else {
+                $f['Sesi'] = 'Semua sesi';
+            }
+            if ($request->location_id) $f['Ruangan'] = Location::find($request->location_id)?->name;
+            if ($request->hasil) {
+                $f['Tampilan'] = $request->hasil === 'selisih' ? 'Hanya selisih / kondisi berbeda' : 'Belum dicek';
+            }
         } else {
             if ($request->status) $f['Status']       = ucfirst($request->status);
             if ($request->dari)   $f['Dari tanggal'] = Carbon::parse($request->dari)->format('d M Y');
@@ -113,19 +147,16 @@ class ReportController extends Controller
 
     public function pdf(Request $request)
     {
-        $type  = $this->type($request);
-        $title = $type === 'aset' ? 'Laporan Daftar Aset' : 'Laporan Peminjaman Aset';
+        $type = $this->type($request);
 
         $pdf = Pdf::loadView('reports.pdf', [
             'type'    => $type,
-            'title'   => $title,
+            'title'   => $this->title($type),
             'data'    => $this->rows($request, $type),
             'filters' => $this->filterText($request, $type),
         ])->setPaper('a4', 'landscape');
 
-        $name = 'laporan-' . $type . '-' . now()->format('Ymd-His') . '.pdf';
-
-        return $pdf->download($name);
+        return $pdf->download($this->fileName($type, 'pdf'));
     }
 
     public function word(Request $request)
@@ -143,22 +174,22 @@ class ReportController extends Controller
             'marginTop' => 800, 'marginBottom' => 800, 'marginLeft' => 800, 'marginRight' => 800,
         ]);
 
-        $section->addText('TAMS', ['bold' => true, 'size' => 16, 'color' => '1E40AF']);
-        $section->addText('Technolife Assets Management System', ['color' => '64748B']);
+        $section->addText('TAMS', ['bold' => true, 'size' => 16, 'color' => 'B1002C']);
+        $section->addText('Technolife Assets Management System', ['color' => '5F5E5E']);
         $section->addText($title, ['bold' => true, 'size' => 14], ['alignment' => 'center', 'spaceBefore' => 200]);
 
         $meta = $filters ? $this->filterLine($filters) . ' | ' : '';
         $section->addText(
             $meta . 'Dicetak pada ' . now()->format('d M Y H:i') . ' oleh ' . auth()->user()->name,
-            ['color' => '475569'],
+            ['color' => '4A4A4A'],
             ['alignment' => 'center', 'spaceAfter' => 200]
         );
 
-        $table = $section->addTable(['borderSize' => 6, 'borderColor' => 'CBD5E1', 'cellMargin' => 60]);
+        $table = $section->addTable(['borderSize' => 6, 'borderColor' => 'DADADA', 'cellMargin' => 60]);
 
         $table->addRow();
         foreach ($head as $h) {
-            $table->addCell(null, ['bgColor' => 'F1F5F9'])->addText($h, ['bold' => true]);
+            $table->addCell(null, ['bgColor' => 'F5F3F3'])->addText($h, ['bold' => true]);
         }
 
         foreach ($rows as $r) {
@@ -171,7 +202,7 @@ class ReportController extends Controller
         if ($rows) {
             $table->addRow();
             foreach ($total as $c) {
-                $table->addCell(null, ['bgColor' => 'F8FAFC'])->addText((string) $c, ['bold' => true]);
+                $table->addCell(null, ['bgColor' => 'FBF9F8'])->addText((string) $c, ['bold' => true]);
             }
         } else {
             $section->addText('Tidak ada data sesuai filter.');
@@ -190,7 +221,7 @@ class ReportController extends Controller
 
         $book  = new Spreadsheet();
         $sheet = $book->getActiveSheet();
-        $sheet->setTitle($type === 'aset' ? 'Daftar Aset' : 'Peminjaman');
+        $sheet->setTitle(['aset' => 'Daftar Aset', 'peminjaman' => 'Peminjaman', 'opname' => 'Hasil Opname'][$type]);
 
         $sheet->setCellValue('A1', 'TAMS - ' . $title);
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -214,7 +245,7 @@ class ReportController extends Controller
 
         $sheet->getStyle("A4:{$lastCol}4")->getFont()->setBold(true);
         $sheet->getStyle("A4:{$lastCol}4")->getFill()
-            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F1F5F9');
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F5F3F3');
         $sheet->getStyle("A4:{$lastCol}{$lastRow}")->getBorders()->getAllBorders()
             ->setBorderStyle(Border::BORDER_THIN);
 
@@ -250,13 +281,12 @@ class ReportController extends Controller
 
     private function exportData(Request $request): array
     {
-        $type  = $this->type($request);
-        $title = $type === 'aset' ? 'Laporan Daftar Aset' : 'Laporan Peminjaman Aset';
-        $data  = $this->rows($request, $type);
+        $type = $this->type($request);
+        $data = $this->rows($request, $type);
 
         [$head, $rows, $total] = $this->tabular($type, $data);
 
-        return [$type, $title, $head, $rows, $total, $this->filterText($request, $type)];
+        return [$type, $this->title($type), $head, $rows, $total, $this->filterText($request, $type)];
     }
 
     private function tabular(string $type, $data): array
@@ -277,7 +307,33 @@ class ReportController extends Controller
                     $data->sum(fn ($a) => (int) $a->borrowed_sum),
                     $data->sum(fn ($a) => max(0, $a->quantity - (int) $a->borrowed_sum)),
                     '', ''];
-        } else {
+            } elseif ($type === 'opname') {
+                $head = ['No', 'Sesi', 'Kode', 'Nama Aset', 'Lokasi', 'Di Sistem', 'Dipinjam', 'Seharusnya',
+                        'Fisik', 'Selisih', 'Kondisi Sistem', 'Kondisi Fisik', 'Catatan'];
+
+                $rows = $data->values()->map(fn ($it, $i) => [
+                    $i + 1, $it->opname->code, $it->asset->asset_code, $it->asset->name, $it->asset->location->name,
+                    $it->system_qty, $it->borrowed_qty, $it->expected_qty,
+                    $it->is_checked ? $it->physical_qty : '-',
+                    $it->diff_label,
+                    ucfirst($it->system_condition),
+                    $it->physical_condition ? ucfirst($it->physical_condition) : '-',
+                    $it->notes ?? '-',
+                ])->all();
+
+                $checked = $data->filter(fn ($i) => $i->is_checked);
+                $summary = 'Sesuai ' . $checked->filter(fn ($i) => $i->difference === 0)->count()
+                        . ' | Kurang ' . $checked->filter(fn ($i) => $i->difference < 0)->count()
+                        . ' | Lebih ' . $checked->filter(fn ($i) => $i->difference > 0)->count()
+                        . ' | Belum dicek ' . ($data->count() - $checked->count());
+
+                $total = ['', 'Total (' . $data->count() . ' baris)', '', '', '',
+                        $data->sum('system_qty'),
+                        $data->sum('borrowed_qty'),
+                        $data->sum(fn ($i) => $i->expected_qty),
+                        $checked->sum('physical_qty'),
+                        $summary, '', '', ''];
+            } else {
             $head = ['No', 'Peminjam', 'Kontak / Divisi', 'Aset', 'Jumlah', 'Tgl Pinjam', 'Batas Kembali', 'Tgl Kembali', 'Status'];
 
             $rows = $data->values()->map(fn ($l, $i) => [
@@ -303,5 +359,29 @@ class ReportController extends Controller
     private function fileName(string $type, string $ext): string
     {
         return 'laporan-' . $type . '-' . now()->format('Ymd-His') . '.' . $ext;
+    }
+
+    private function opnameFor(Request $request): ?StockOpname
+    {
+        return $request->opname_id
+            ? StockOpname::with('location')->find($request->opname_id)
+            : null;
+    }
+
+    private function opnameRows(Request $request)
+    {
+        return StockOpnameItem::with(['opname', 'asset.category', 'asset.location'])
+            ->when($request->opname_id, fn ($q, $v) => $q->where('stock_opname_id', $v))
+            ->when($request->location_id, fn ($q, $v) => $q->whereHas('asset', fn ($a) => $a->where('location_id', $v)))
+            ->get()
+            ->sortBy([
+                fn ($a, $b) => $b->stock_opname_id <=> $a->stock_opname_id,                 // sesi terbaru dulu
+                fn ($a, $b) => strcmp($a->asset->asset_code, $b->asset->asset_code),
+            ])
+            ->values()
+            ->when($request->hasil === 'selisih', fn ($c) => $c->filter(
+                fn ($i) => $i->is_checked && ($i->difference !== 0 || $i->physical_condition !== $i->system_condition)
+            )->values())
+            ->when($request->hasil === 'belum', fn ($c) => $c->reject(fn ($i) => $i->is_checked)->values());
     }
 }

@@ -55,7 +55,7 @@ class User extends Authenticatable
 
     public function getAvatarColorAttribute(): string
     {
-        $colors = ['#2563EB', '#7C3AED', '#0891B2', '#16A34A', '#D97706', '#DB2777'];
+        $colors = ['#DC143C', '#B1002C', '#5F5E5E', '#006622', '#303030', '#916F6E'];
 
         return $colors[abs(crc32($this->email)) % count($colors)];
     }

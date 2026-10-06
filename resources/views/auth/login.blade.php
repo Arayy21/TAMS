@@ -7,12 +7,20 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo-icon.svg') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600&display=swap" rel="stylesheet">
     <style>
-        body { background:#F1F5F9; font-family:Inter, Arial, sans-serif; min-height:100vh; }
-        .login-card { width:100%; max-width:400px; background:#fff; border:1px solid #E2E8F0; border-radius:12px; }
-        .brand { color:#1E3A8A; font-size:26px; font-weight:700; letter-spacing:2px; }
-        .btn-primary { background:#2563EB; border-color:#2563EB; }
-        .form-control { height:44px; }
+        body { background:#FBF9F8; color:#4A4A4A; font-family:Inter, Arial, sans-serif; line-height:1.6; min-height:100vh; }
+        .login-card { width:100%; max-width:400px; background:#fff; border:1px solid #EAEAEA; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+        .brand { color:#121212; font-family:Poppins, sans-serif; font-size:26px; font-weight:600; letter-spacing:2px; }
+        .btn { border-radius:12px; }
+        .btn-primary { background:#DC143C; border-color:#DC143C; }
+        .btn-primary:hover, .btn-primary:active, .btn-primary:focus { background:#B1002C !important; border-color:#B1002C !important; }
+        .btn-outline-secondary { border-color:#E5E5E5; color:#4A4A4A; }
+        .form-control { height:44px; border-color:#E5E5E5; border-radius:12px; }
+        .form-control:focus { border-color:#DC143C; box-shadow:0 0 0 2px rgba(220,20,60,.18); }
+        .form-check-input:checked { background-color:#DC143C; border-color:#DC143C; }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center p-3">

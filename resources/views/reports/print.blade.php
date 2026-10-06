@@ -6,13 +6,13 @@
     <title>{{ $title }} - TAMS</title>
     <style>
         @page { size: A4 landscape; margin: 12mm; }
-        body { font-family: Arial, sans-serif; color:#111827; font-size:12px; margin:0; padding:16px; }
-        .kop { display:flex; align-items:center; gap:12px; border-bottom:3px solid #1E40AF; padding-bottom:10px; margin-bottom:14px; }
+        body { font-family: Arial, sans-serif; color:#121212; font-size:12px; margin:0; padding:16px; }
+        .kop { display:flex; align-items:center; gap:12px; border-bottom:3px solid #B1002C; padding-bottom:10px; margin-bottom:14px; }
         .kop img { width:48px; height:48px; }
         .kop h1 { font-size:18px; margin:0; letter-spacing:1px; }
-        .kop p { margin:2px 0 0; color:#64748B; }
+        .kop p { margin:2px 0 0; color:#5F5E5E; }
         h2 { text-align:center; font-size:16px; margin:0 0 4px; }
-        .meta { text-align:center; color:#475569; margin-bottom:12px; }
+        .meta { text-align:center; color:#4A4A4A; margin-bottom:12px; }
         .bar { margin-bottom:12px; }
         .bar button { padding:6px 14px; margin-right:6px; cursor:pointer; }
         @media print { .no-print { display:none; } body { padding:0; } }
@@ -42,7 +42,7 @@
         Dicetak pada {{ now()->format('d M Y H:i') }} oleh {{ auth()->user()->name }}
     </div>
 
-    @include($type === 'aset' ? 'reports._table_assets' : 'reports._table_loans')
+    @include('reports._table_' . ['aset' => 'assets', 'peminjaman' => 'loans', 'opname' => 'opname'][$type])
 
     <script>
         window.addEventListener('load', function () { setTimeout(function () { window.print(); }, 400); });

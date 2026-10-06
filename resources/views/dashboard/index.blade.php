@@ -6,9 +6,9 @@
 @php
     $badge = ['baik' => 'success', 'rusak' => 'danger', 'perbaikan' => 'warning'];
     $cards = [
-        ['Total Aset',        $stats['total'],     '#2563EB'],
-        ['Kondisi Baik',      $stats['baik'],      '#16A34A'],
-        ['Rusak',             $stats['rusak'],     '#DC2626'],
+        ['Total Aset',        $stats['total'],     '#DC143C'],
+        ['Kondisi Baik',      $stats['baik'],      '#28A745'],
+        ['Rusak',             $stats['rusak'],     '#BA1A1A'],
         ['Dalam Perbaikan',   $stats['perbaikan'], '#D97706'],
     ];
 @endphp
@@ -112,7 +112,7 @@
             datasets: [{
                 label: 'Jumlah aset',
                 data: @json($perKategori->pluck('total')),
-                backgroundColor: '#2563EB',
+                backgroundColor: '#DC143C',
                 borderRadius: 6
             }]
         },

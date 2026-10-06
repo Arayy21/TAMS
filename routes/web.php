@@ -65,5 +65,9 @@ Route::middleware(['auth', 'no-back'])->group(function () {
         Route::get('opname', [StockOpnameController::class, 'index'])->name('opnames.index');
         Route::get('opname/buat', [StockOpnameController::class, 'create'])->name('opnames.create');
         Route::post('opname', [StockOpnameController::class, 'store'])->name('opnames.store');
+        Route::get('opname/{opname}', [StockOpnameController::class, 'show'])->name('opnames.show');
+        Route::put('opname/{opname}/item/{item}', [StockOpnameController::class, 'updateItem'])->name('opnames.items.update');
+        Route::get('opname/{opname}/selesai', [StockOpnameController::class, 'finishForm'])->name('opnames.finish.form');
+        Route::post('opname/{opname}/selesai', [StockOpnameController::class, 'finish'])->name('opnames.finish');
     });
 });

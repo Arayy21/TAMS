@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class StockOpnameItem extends Model
 {
     protected $fillable = [
@@ -40,4 +41,17 @@ class StockOpnameItem extends Model
     {
         return $this->is_checked ? $this->physical_qty - $this->expected_qty : null;
     }
+
+    // Teks selisih: Sesuai / Kurang N / Lebih N / Belum dicek
+    public function getDiffLabelAttribute(): string
+    {
+        if (! $this->is_checked) {
+            return 'Belum dicek';
+        }
+
+        $d = $this->difference;
+
+        return $d === 0 ? 'Sesuai' : ($d < 0 ? 'Kurang ' . abs($d) : 'Lebih ' . $d);
+    }
+
 }

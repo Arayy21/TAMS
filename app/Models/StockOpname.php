@@ -8,12 +8,13 @@ class StockOpname extends Model
 {
     protected $fillable = [
         'code', 'name', 'opname_date', 'location_id', 'status',
-        'notes', 'created_by', 'finished_by', 'finished_at',
+        'notes', 'adjustments_applied', 'created_by', 'finished_by', 'finished_at',
     ];
 
     protected $casts = [
         'opname_date' => 'date',
         'finished_at' => 'datetime',
+        'adjustments_applied' => 'boolean',
     ];
 
     public function location()
@@ -53,5 +54,10 @@ class StockOpname extends Model
         $next = $last ? ((int) substr($last, 4)) + 1 : 1;
 
         return 'OPN-' . str_pad($next, 4, '0', STR_PAD_LEFT);
+    }
+
+    public function finisher()
+    {
+        return $this->belongsTo(User::class, 'finished_by');
     }
 }
