@@ -114,6 +114,19 @@ class AssetController extends Controller
             ->with('success', "Aset {$asset->asset_code} berhasil dihapus.");
     }
 
+    public function barcode(Request $request, Asset $asset)
+    {
+        abort_unless(Asset::isValidCode($asset->asset_code), 404);
+
+        $headers = ['Content-Type' => 'image/svg+xml'];
+
+        if ($request->boolean('unduh')) {
+            $headers['Content-Disposition'] = 'attachment; filename="barcode-' . $asset->asset_code . '.svg"';
+        }
+
+        return response($asset->barcodeSvg(), 200, $headers);
+    }
+
     // ---------- helper ----------
 
     private function validated(Request $request): array

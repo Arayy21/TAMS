@@ -12,6 +12,8 @@ use App\Http\Controllers\StockOpnameController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LabelController;
+use App\Http\Controllers\ScanController;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -37,6 +39,11 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
         Route::resource('aset', AssetController::class)
             ->parameters(['aset' => 'asset'])
             ->names('assets');
+        Route::get('aset/{asset}/barcode', [AssetController::class, 'barcode'])->name('assets.barcode');
+        Route::get('aset/{asset}/label', [LabelController::class, 'single'])->name('assets.label');
+        Route::post('aset/label-massal', [LabelController::class, 'bulk'])->name('assets.labels');
+        Route::get('scan', [ScanController::class, 'index'])->name('scan.index');
+        Route::get('scan/cari', [ScanController::class, 'find'])->name('scan.find');
     });
 
     Route::middleware('can:manage-users')->group(function () {

@@ -50,10 +50,25 @@
 
     {{-- Slot barcode: diisi di Fase 21 --}}
     <div class="col-12 col-xl-4">
-        <div class="card-tams p-4 h-100 text-center text-muted d-flex flex-column justify-content-center">
-            <i class="bi bi-upc-scan fs-1"></i>
-            <div class="fw-semibold mt-2">Barcode Aset</div>
-            <small>Akan ditambahkan pada tahap Barcode.</small>
+        <div class="card-tams p-4 h-100 text-center d-flex flex-column">
+            <h2 class="h6 fw-semibold text-start mb-3">Barcode Aset</h2>
+
+            <div class="border rounded-3 bg-white p-4 mb-2 d-flex justify-content-center">
+                <img src="{{ route('assets.barcode', $asset) }}" alt="Barcode {{ $asset->asset_code }}"
+                    style="max-width:100%; height:auto">
+            </div>
+
+            <div class="fw-bold" style="letter-spacing:2px">{{ $asset->asset_code }}</div>
+            <small class="text-muted mb-3">Code 128 &middot; hanya berisi kode aset</small>
+
+            <div class="mt-auto d-grid gap-2">
+                <a href="{{ route('assets.barcode', [$asset, 'unduh' => 1]) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-download"></i> Unduh SVG
+                </a>
+                <a href="{{ route('assets.label', $asset) }}" target="_blank" class="btn btn-outline-secondary">
+                    <i class="bi bi-printer"></i> Cetak Label
+                </a>
+            </div>
         </div>
     </div>
 </div>

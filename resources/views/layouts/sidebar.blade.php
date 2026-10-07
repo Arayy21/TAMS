@@ -36,6 +36,9 @@
                     <i class="bi bi-geo-alt me-2"></i> Lokasi
                 </a>
             @endif
+            <a class="nav-link {{ $active('scan.*') }}" href="{{ route('scan.index') }}">
+                <i class="bi bi-upc-scan me-2"></i> Scan Barcode
+            </a>
         </div>
 
         <div class="nav-group">
