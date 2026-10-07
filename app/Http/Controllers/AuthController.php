@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -42,7 +43,8 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::clear($key);
             $request->session()->regenerate();
-
+            
+            DB::table('users')->where('id', $request->user()->id)->update(['last_login_at' => now()]);
             $home = $request->user()->isAdmin() ? route('dashboard') : route('assets.index');
 
             return redirect()->intended($home); 

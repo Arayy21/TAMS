@@ -6,6 +6,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Loan;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
             'soon'    => Loan::dueSoon()->count(),
         ]);
             });
+        
+        // Hanya peran Admin (bukan Pengelola) yang boleh mengelola akun
+        Gate::define('manage-users', fn ($user) => $user->role === 'admin');
     }
     
 }

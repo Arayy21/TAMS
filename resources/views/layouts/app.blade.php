@@ -127,6 +127,22 @@
             .sidebar { position:static; width:100%; min-height:auto; border-right:0; border-bottom:1px solid var(--border); }
             .main { margin-left:0; }
         }
+
+        /* Sidebar setinggi layar, tombol Keluar selalu terlihat */
+        .sidebar { height: 100vh; height: 100dvh; overflow-y: auto; }
+        .sidebar-foot { position: sticky; bottom: 0; margin-top: auto; padding: 10px 0 12px;
+                        background: var(--surface, #fff); border-top: 1px solid var(--border, #EAEAEA); }
+        .sidebar-foot .nav-link { color: var(--danger, #BA1A1A); font-weight: 500; }
+        .sidebar-foot .nav-link:hover { background: rgba(186, 26, 26, .08); color: var(--danger, #BA1A1A); }
+
+        @media (max-width: 991px) {
+            .sidebar { height: auto; overflow-y: visible; }
+            .sidebar-foot { position: static; }
+        }
+
+        .profile-info .row-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+        .profile-info .row-item .label { flex-shrink: 0; }
+        .profile-info .row-item span:last-child { text-align: right; }
     </style>
 </head>
 <body>
@@ -169,9 +185,16 @@
                 <span class="label">Bergabung sejak</span>
                 <span class="fw-medium">{{ auth()->user()->created_at?->translatedFormat('d F Y') ?? '-' }}</span>
             </div>
+            <div class="row-item">
+                <span class="label">Masuk terakhir</span>
+                <span class="fw-medium">{{ auth()->user()->last_login_label }}</span>
+            </div>
         </div>
 
         <div class="profile-foot">
+            <a href="{{ route('profile.show') }}" class="btn btn-outline-secondary w-100 mb-2">
+                <i class="bi bi-person-gear me-1"></i> Profil Saya
+            </a>
             <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#modalLogout">
                 <i class="bi bi-box-arrow-right me-1"></i> Keluar
             </button>

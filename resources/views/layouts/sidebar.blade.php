@@ -62,9 +62,18 @@
             </div>
         @endif
 
+        @can('manage-users')
+            <div class="nav-group">
+                <div class="nav-label">Pengaturan</div>
+                <a class="nav-link {{ $active('users.*') }}" href="{{ route('users.index') }}">
+                    <i class="bi bi-person-gear me-2"></i> Kelola Pengguna
+                </a>
+            </div>
+        @endcan
+
     </nav>
 
-    <div class="mt-auto pb-3 pt-2">
+    <div class="sidebar-foot">
         <button type="button" class="nav-link border-0 bg-transparent text-start"
                 style="width: calc(100% - 24px)"
                 data-bs-toggle="modal" data-bs-target="#modalLogout">

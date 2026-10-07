@@ -10,6 +10,8 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\StockOpnameController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -23,15 +25,25 @@ Route::middleware(['guest', 'no-back'])->group(function () {
 });
 
 // Wajib login
-Route::middleware(['auth', 'no-back'])->group(function () {
+Route::middleware(['auth', 'active', 'no-back'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('profil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('profil/password', [ProfileController::class, 'password'])->name('profile.password');
 
     // Admin dan Pengguna: kelola data aset
     Route::middleware('role:admin,staff')->group(function () {
         Route::resource('aset', AssetController::class)
             ->parameters(['aset' => 'asset'])
             ->names('assets');
+    });
+
+    Route::middleware('can:manage-users')->group(function () {
+    Route::resource('pengguna', UserController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->parameters(['pengguna' => 'user'])
+        ->names('users');
     });
 
     Route::get('peminjam', [LoanController::class, 'index'])->name('loans.index');
