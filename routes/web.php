@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
-    return redirect()->route(auth()->user()?->role === 'admin' ? 'dashboard' : 'assets.index');
+    return redirect()->route(auth()->user()?->isAdmin() ? 'dashboard' : 'assets.index');
 });
 
 // Hanya tamu

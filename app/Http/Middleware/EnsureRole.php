@@ -12,7 +12,10 @@ class EnsureRole
     {
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $roles, true)) {
+        // Pengelola diperlakukan sebagai tingkat admin
+        $role = $user?->isAdmin() ? 'admin' : $user?->role;
+
+        if (! $user || ! in_array($role, $roles, true)) {
             abort(403);
         }
 

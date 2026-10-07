@@ -30,15 +30,25 @@ class User extends Authenticatable
         ];
     }
 
+    // Tingkat admin: admin dan pengelola
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'pengelola'], true);
+    }
+
+    public function isPengelola(): bool
+    {
+        return $this->role === 'pengelola';
     }
 
     public function getRoleLabelAttribute(): string
     {
-        return $this->role === 'admin' ? 'Admin' : 'Pengguna';
-    }  
+        return match ($this->role) {
+            'admin'     => 'Admin',
+            'pengelola' => 'Pengelola',
+            default     => 'Pengguna',
+        };
+    } 
     
     public function getInitialsAttribute(): string
     {
