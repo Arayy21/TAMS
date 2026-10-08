@@ -70,6 +70,21 @@
 </div>
 
 <div class="card-tams p-4">
+    @if ($editable)
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-lg-8">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input type="text" id="scanKode" class="form-control" placeholder="Scan barcode aset, lalu ketik jumlah fisik dan tekan Enter"
+                        autocomplete="off" autocapitalize="characters" maxlength="30">
+                    <button type="button" class="btn btn-outline-secondary" id="btnScanCam">
+                        <i class="bi bi-camera-video"></i> Kamera
+                    </button>
+                </div>
+                <div id="scanInfo" class="form-text"></div>
+            </div>
+        </div>
+    @endif
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-5">
             <input type="text" id="q" class="form-control" placeholder="Cari kode atau nama aset...">
@@ -110,6 +125,7 @@
                     <tr class="item-row {{ $it->is_checked ? 'row-checked' : '' }}"
                         data-url="{{ route('opnames.items.update', [$opname, $it]) }}"
                         data-search="{{ strtolower($it->asset->asset_code . ' ' . $it->asset->name) }}"
+                        data-code="{{ $it->asset->asset_code }}"
                         data-checked="{{ $it->is_checked ? 1 : 0 }}"
                         data-diff="{{ $it->is_checked && $diff !== 0 ? 1 : 0 }}"
                         data-expected="{{ $it->expected_qty }}"
@@ -162,6 +178,7 @@
         </table>
     </div>
 </div>
+@include('scan._camera')
 @endsection
 
 @push('scripts')
@@ -232,6 +249,7 @@
 
             msg.className = 'row-msg small mt-1 text-success';
             msg.textContent = 'Tersimpan';
+            if (window.afterOpnameSave) window.afterOpnameSave();
             applyFilter();
         } catch (e) {
             msg.className = 'row-msg small mt-1 text-danger';
@@ -257,5 +275,48 @@
         });
         qty.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save.click(); } });
     });
+</script>
+@endpush
+
+@push('scripts')
+<script>
+(function () {
+    var inp = document.getElementById('scanKode');
+    if (! inp) return;
+    var info = document.getElementById('scanInfo'), isTouch = 'ontouchstart' in window;
+
+    function say(text, cls) { info.className = 'form-text ' + (cls || ''); info.textContent = text; }
+
+    function locate(raw) {
+        var code = (raw || '').trim().toUpperCase();
+        if (! code) return;
+
+        var tr = Array.prototype.find.call(document.querySelectorAll('tr.item-row'), function (r) { return r.dataset.code === code; });
+        if (! tr) { say(code + ' tidak termasuk dalam sesi opname ini.', 'text-danger'); inp.select(); return; }
+
+        // Hapus pencarian dan filter supaya baris pasti terlihat
+        var q = document.getElementById('q'), f = document.getElementById('f');
+        q.value = ''; f.value = '';
+        q.dispatchEvent(new Event('input'));
+        tr.classList.remove('d-none');
+
+        tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        tr.classList.add('table-warning');
+        setTimeout(function () { tr.classList.remove('table-warning'); }, 2500);
+
+        var qty = tr.querySelector('.qty-input');
+        qty.focus(); qty.select();
+        say(code + ' ditemukan. Hitung unitnya, ketik jumlah fisik, lalu tekan Enter.', 'text-success');
+        inp.value = '';
+    }
+
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); locate(inp.value); } });
+    document.getElementById('btnScanCam').addEventListener('click', function () { openScanCamera(locate); });
+
+    // Setelah satu baris tersimpan, kembali ke kolom scan untuk aset berikutnya
+    window.afterOpnameSave = function () { inp.value = ''; if (! isTouch) inp.focus(); };
+
+    if (! isTouch) inp.focus();
+})();
 </script>
 @endpush

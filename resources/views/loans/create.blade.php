@@ -19,6 +19,18 @@
         <div class="row g-3">
 
             <div class="col-12">
+                <label class="form-label">Scan Barcode Aset <span class="text-muted">(opsional)</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                    <input type="text" id="scanKode" class="form-control" placeholder="Scan atau ketik kode, lalu Enter"
+                        autocomplete="off" autocapitalize="characters" maxlength="30">
+                    <button type="button" class="btn btn-outline-secondary" id="btnScanCam">
+                        <i class="bi bi-camera-video"></i> Kamera
+                    </button>
+                </div>
+                <div id="scanInfo" class="form-text"></div>
+            </div>
+            <div class="col-12">
                 <label for="asset_id" class="form-label">Aset <span class="text-danger">*</span></label>
                 <select name="asset_id" id="asset_id" class="form-select @error('asset_id') is-invalid @enderror">
                     <option value="">Pilih aset</option>
@@ -80,6 +92,7 @@
     </form>
     @endif
 </div>
+@include('scan._camera')
 @endsection
 
 @push('scripts')
@@ -120,4 +133,49 @@
         }
         if (nameInput) { nameInput.addEventListener('input', cekPeminjam); cekPeminjam(); }
     </script>
+@endpush
+
+@push('scripts')
+<script>
+(function () {
+    var sel = document.getElementById('asset_id'), inp = document.getElementById('scanKode'), info = document.getElementById('scanInfo');
+    if (! sel || ! inp) return;
+    var URL_FIND = @json(route('scan.find'));
+
+    function say(text, cls) { info.className = 'form-text ' + (cls || ''); info.textContent = text; }
+
+    async function pick(raw) {
+        var code = (raw || '').trim().toUpperCase();
+        if (! code) return;
+        say('Mencari ' + code + '...');
+        try {
+            var res = await fetch(URL_FIND + '?kode=' + encodeURIComponent(code), { headers: { 'Accept': 'application/json' } });
+            var d = await res.json();
+            if (! d.found) { say(d.message || 'Tidak ditemukan.', 'text-danger'); return; }
+
+            var a = d.asset;
+            var opt = Array.prototype.find.call(sel.options, function (o) { return o.value === String(a.id); });
+            if (! opt) {
+                var why = a.status !== 'aktif' ? 'statusnya nonaktif'
+                        : (a.condition !== 'baik' ? 'kondisinya ' + a.condition : 'tidak ada sisa unit yang tersedia');
+                say(a.code + ' (' + a.name + ') tidak dapat dipinjam: ' + why + '.', 'text-danger');
+                return;
+            }
+            sel.value = opt.value;
+            sel.dispatchEvent(new Event('change'));
+            say('Terpilih: ' + a.code + ' - ' + a.name + ' (tersedia ' + a.available + ').', 'text-success');
+            inp.value = '';
+            var next = document.getElementById('borrower_name');
+            if (next) next.focus();
+        } catch (e) {
+            say('Gagal mencari. Muat ulang halaman, mungkin sesi login sudah berakhir.', 'text-danger');
+        }
+    }
+
+    // Enter dari scanner tidak boleh mengirim form
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); pick(inp.value); } });
+    document.getElementById('btnScanCam').addEventListener('click', function () { openScanCamera(pick); });
+    if (! ('ontouchstart' in window)) inp.focus();
+})();
+</script>
 @endpush
