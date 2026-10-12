@@ -3,7 +3,8 @@
     $active = fn (string ...$routes) => request()->routeIs(...$routes) ? 'active' : '';
 @endphp
 
-<aside class="sidebar d-flex flex-column">
+<aside class="sidebar d-flex flex-column" id="appSidebar">
+    <button type="button" class="sidebar-close" id="sidebarClose" aria-label="Tutup menu"><i class="bi bi-x-lg"></i></button>
     <a href="{{ $admin ? route('dashboard') : route('assets.index') }}" class="brand" aria-label="TAMS - Beranda">
         <img src="{{ asset('images/logo-icon.svg') }}" alt="Logo TAMS">
         <span>

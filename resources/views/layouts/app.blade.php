@@ -143,14 +143,81 @@
         .profile-info .row-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
         .profile-info .row-item .label { flex-shrink: 0; }
         .profile-info .row-item span:last-child { text-align: right; }
+
+        /* ================= RESPONSIF ================= */
+        .menu-btn { width: 42px; height: 42px; padding: 0; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .sidebar-backdrop, .sidebar-close { display: none; }
+        .main { min-width: 0; }
+        .page-title { min-width: 0; }
+        .page-title h1 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .scroll-hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+
+        /* ----- Tablet dan HP: sidebar menjadi menu geser ----- */
+        @media (max-width: 991.98px) {
+            .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: min(290px, 86vw); height: 100vh; height: 100dvh; min-height: 0;
+                    z-index: 1045; overflow-y: auto; transform: translateX(-100%); visibility: hidden; box-shadow: none;
+                    transition: transform .25s ease, visibility 0s linear .25s; }
+            body.sidebar-open .sidebar { transform: none; visibility: visible; box-shadow: 0 0 40px rgba(0, 0, 0, .25);
+                    transition: transform .25s ease, visibility 0s; }
+            .sidebar-foot { position: sticky; bottom: 0; }
+            .sidebar-close { display: flex; position: absolute; top: 14px; right: 12px; width: 36px; height: 36px; align-items: center;
+                    justify-content: center; border: 0; background: transparent; color: var(--muted); border-radius: 10px; font-size: 18px; }
+            .sidebar-close:hover { background: var(--surface-2); }
+            .sidebar-backdrop { display: block; position: fixed; inset: 0; z-index: 1040; background: rgba(18, 18, 18, .45);
+                    opacity: 0; visibility: hidden; transition: opacity .25s; }
+            body.sidebar-open .sidebar-backdrop { opacity: 1; visibility: visible; }
+            body.sidebar-open { overflow: hidden; }
+
+            .main { margin-left: 0; }
+            .topbar { position: sticky; top: 0; z-index: 1020; height: 64px; padding-left: 12px !important; padding-right: 12px !important; }
+            main.p-4 { padding: 16px !important; }
+        }
+
+        /* ----- Layar kecil (di bawah 768 px) ----- */
+        @media (max-width: 767.98px) {
+            .form-control, .form-select, .form-control-sm, .form-select-sm { font-size: 16px; }
+            .table { font-size: 13px; }
+            .table > :not(caption) > * > * { padding: .55rem .5rem; }
+            .table th, .badge { white-space: nowrap; }
+            .table-responsive { -webkit-overflow-scrolling: touch; }
+
+            /* Kolom yang kurang penting disembunyikan per halaman */
+            body[data-page="assets.index"] .table :is(th, td):is(:nth-child(4), :nth-child(5), :nth-child(7), :nth-child(10)),
+            body[data-page="loans.index"] .table :is(th, td):is(:nth-child(4), :nth-child(5)),
+            body[data-page="opnames.show"] .table :is(th, td):is(:nth-child(2), :nth-child(3), :nth-child(5), :nth-child(9)),
+            body[data-page="opnames.index"] .table :is(th, td):is(:nth-child(4), :nth-child(7)),
+            body[data-page="movements.index"] .table :is(th, td):is(:nth-child(6), :nth-child(7), :nth-child(8)),
+            body[data-page="users.index"] .table :is(th, td):is(:nth-child(4), :nth-child(5)),
+            body[data-page="histories.index"] .table :is(th, td):is(:nth-child(5)) { display: none; }
+        }
+
+        /* ----- HP (di bawah 576 px) ----- */
+        @media (max-width: 575.98px) {
+            .stat-value { font-size: 28px; }
+            .kpi-value { font-size: 24px; }
+            .card-tams.p-4 { padding: 1rem !important; }
+            .card-tams > .d-flex.justify-content-between { flex-wrap: wrap; gap: .5rem; }
+            .card-tams form .d-flex { flex-wrap: wrap; }
+            .btn-sm { min-height: 34px; }
+            .alert { font-size: 13px; }
+            .modal-dialog:not(.modal-sm):not(.modal-fullscreen-sm-down) { margin: .5rem; }
+            .pagination { flex-wrap: wrap; justify-content: center; }
+        }
     </style>
 </head>
-<body>
+<body data-page="{{ request()->route()?->getName() }}">
     @include('layouts.sidebar')
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <div class="main">
         <div class="topbar d-flex align-items-center justify-content-between px-4">
+            <div class="d-flex align-items-center gap-2 page-title">
+            <button type="button" class="btn btn-light border menu-btn d-lg-none" id="menuBtn"
+                    aria-label="Buka menu" aria-controls="appSidebar" aria-expanded="false">
+                <i class="bi bi-list fs-4"></i>
+            </button>
             <h1 class="h5 fw-bold mb-0">@yield('title')</h1>
+        </div>
             <div class="dropdown">
     <button type="button" class="avatar-btn" data-bs-toggle="dropdown" aria-expanded="false"
             aria-label="Buka profil {{ auth()->user()->name }}">
@@ -214,6 +281,45 @@
         @include('layouts.logout-modal')
     @endauth
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    (function () {
+        var body = document.body, btn = document.getElementById('menuBtn'), sb = document.getElementById('appSidebar');
+        var backdrop = document.getElementById('sidebarBackdrop'), closeBtn = document.getElementById('sidebarClose');
+
+        // ----- Menu geser -----
+        if (btn && sb) {
+            function openMenu()  { body.classList.add('sidebar-open'); btn.setAttribute('aria-expanded', 'true'); if (closeBtn) closeBtn.focus(); }
+            function closeMenu(back) { body.classList.remove('sidebar-open'); btn.setAttribute('aria-expanded', 'false'); if (back) btn.focus(); }
+
+            btn.addEventListener('click', function () { body.classList.contains('sidebar-open') ? closeMenu(true) : openMenu(); });
+            if (backdrop) backdrop.addEventListener('click', function () { closeMenu(true); });
+            if (closeBtn) closeBtn.addEventListener('click', function () { closeMenu(true); });
+            document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && body.classList.contains('sidebar-open')) closeMenu(true); });
+            sb.addEventListener('click', function (e) { if (e.target.closest('a.nav-link, [data-bs-toggle="modal"]')) closeMenu(false); });
+
+            var wide = window.matchMedia('(min-width: 992px)');
+            var onWide = function (e) { if (e.matches) closeMenu(false); };
+            wide.addEventListener ? wide.addEventListener('change', onWide) : wide.addListener(onWide);
+        }
+
+        // ----- Petunjuk geser pada tabel yang melebihi lebar layar (HP) -----
+        function hints() {
+            document.querySelectorAll('.scroll-hint').forEach(function (el) { el.remove(); });
+            if (window.innerWidth >= 768) return;
+            document.querySelectorAll('.table-responsive').forEach(function (el) {
+                if (el.scrollWidth > el.clientWidth + 4) {
+                    var h = document.createElement('div');
+                    h.className = 'scroll-hint';
+                    h.innerHTML = '<i class="bi bi-arrow-left-right"></i> Geser tabel ke samping untuk melihat kolom lainnya';
+                    el.parentNode.insertBefore(h, el);
+                }
+            });
+        }
+        var t;
+        window.addEventListener('load', hints);
+        window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(hints, 250); });
+    })();
+    </script>
     @stack('scripts')
 </body>
 </html>
