@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\StockMovementController;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -88,5 +89,8 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
         Route::put('opname/{opname}/item/{item}', [StockOpnameController::class, 'updateItem'])->name('opnames.items.update');
         Route::get('opname/{opname}/selesai', [StockOpnameController::class, 'finishForm'])->name('opnames.finish.form');
         Route::post('opname/{opname}/selesai', [StockOpnameController::class, 'finish'])->name('opnames.finish');
+        Route::get('mutasi', [StockMovementController::class, 'index'])->name('movements.index');
+        Route::get('mutasi/tambah', [StockMovementController::class, 'create'])->name('movements.create');
+        Route::post('mutasi', [StockMovementController::class, 'store'])->name('movements.store');
     });
 });

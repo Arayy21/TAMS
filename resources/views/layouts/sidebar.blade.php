@@ -43,10 +43,15 @@
 
         <div class="nav-group">
             <div class="nav-label">Aktivitas</div>
+
             <a class="nav-link {{ $active('loans.*') }}" href="{{ route('loans.index') }}">
                 <i class="bi bi-people me-2"></i> Peminjam
             </a>
+
             @if ($admin)
+                <a class="nav-link {{ $active('movements.*') }}" href="{{ route('movements.index') }}">
+                    <i class="bi bi-arrow-left-right me-2"></i> Barang Masuk/Keluar
+                </a>
                 <a class="nav-link {{ $active('opnames.*') }}" href="{{ route('opnames.index') }}">
                     <i class="bi bi-clipboard-check me-2"></i> Stok Opname
                 </a>

@@ -16,15 +16,19 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useBootstrapFive();
         View::composer('layouts.app', function ($view) {
-        if (! auth()->check()) {
-            return;
-        }
+            if (! auth()->check()) {
+                return;
+            }
 
-        $view->with('dueAlert', [
-            'overdue' => Loan::overdue()->count(),
-            'soon'    => Loan::dueSoon()->count(),
-        ]);
-            });
+            // Peminjaman yang paling dekat jatuh tempo (dalam rentang pengingat)
+            $nearest = Loan::with('asset')->dueSoon()->orderBy('due_at')->orderBy('id')->first();
+
+            $view->with('dueAlert', [
+                'overdue' => Loan::overdue()->count(),
+                'soon'    => Loan::dueSoon()->count(),
+                'nearest' => $nearest,
+            ]);
+        });
         
         // Hanya peran Admin (bukan Pengelola) yang boleh mengelola akun
         Gate::define('manage-users', fn ($user) => $user->role === 'admin');

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException; 
 
 class AssetController extends Controller
 {
@@ -45,6 +46,9 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        if ($data['quantity'] < 1) {
+            throw ValidationException::withMessages(['quantity' => 'Jumlah unit minimal 1 untuk aset baru.']);
+        }
 
         $asset = DB::transaction(function () use ($data) {
             $asset = Asset::create($data + [
@@ -140,7 +144,7 @@ class AssetController extends Controller
             'description'     => 'nullable|string|max:1000',
             'serial_number'   => 'nullable|string|max:100',
             'purchase_date'   => 'nullable|date',
-            'quantity'        => 'required|integer|min:1|max:100000',
+            'quantity'        => 'required|integer|min:0|max:100000',
         ]);
     }
 
