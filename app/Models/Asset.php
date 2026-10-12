@@ -38,6 +38,11 @@ class Asset extends Model
         return $this->hasMany(Loan::class);
     }
 
+    public function movements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     // Jumlah unit yang sedang dipinjam
     public function getBorrowedAttribute(): int
     {

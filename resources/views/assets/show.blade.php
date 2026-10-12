@@ -2,6 +2,8 @@
 @section('title', 'Detail Aset')
 
 @section('content')
+@php $isAdmin = auth()->user()->isAdmin(); @endphp
+
 <nav class="small text-muted mb-3">
     <a href="{{ route('assets.index') }}" class="text-decoration-none">Data Aset</a> / {{ $asset->asset_code }}
 </nav>
@@ -27,13 +29,13 @@
 
             <div class="row g-3">
                 @foreach ([
-                    'Kode Aset' => $asset->asset_code,
-                    'Kategori' => $asset->category->name,
-                    'Lokasi' => $asset->location->name,
-                    'Nomor Seri' => $asset->serial_number ?? '-',
+                    'Kode Aset'         => $asset->asset_code,
+                    'Kategori'          => $asset->category->name,
+                    'Lokasi'            => $asset->location->name,
+                    'Jumlah Unit'       => $asset->quantity . ' (tersedia ' . $asset->available . ')',
+                    'Nomor Seri'        => $asset->serial_number ?? '-',
                     'Tanggal Pembelian' => $asset->purchase_date?->translatedFormat('d F Y') ?? '-',
-                    'Dicatat' => $asset->created_at?->translatedFormat('d F Y') ?? '-',
-                    'Jumlah Unit' => $asset->quantity . ' (tersedia ' . $asset->available . ')',
+                    'Dicatat'           => $asset->created_at?->translatedFormat('d F Y') ?? '-',
                 ] as $label => $value)
                     <div class="col-sm-6">
                         <div class="text-muted small">{{ $label }}</div>
@@ -48,35 +50,95 @@
         </div>
     </div>
 
-    {{-- Slot barcode: diisi di Fase 21 --}}
     <div class="col-12 col-xl-4">
         <div class="card-tams p-4 h-100 text-center d-flex flex-column">
             <h2 class="h6 fw-semibold text-start mb-3">Barcode Aset</h2>
 
             <div class="border rounded-3 bg-white p-4 mb-2 d-flex justify-content-center">
                 <img src="{{ route('assets.barcode', $asset) }}" alt="Barcode {{ $asset->asset_code }}"
-                    style="max-width:100%; height:auto">
+                     style="max-width:100%; height:auto">
             </div>
 
             <div class="fw-bold" style="letter-spacing:2px">{{ $asset->asset_code }}</div>
             <small class="text-muted mb-3">Code 128 &middot; hanya berisi kode aset</small>
 
             <div class="mt-auto d-grid gap-2">
-                <a href="{{ route('assets.barcode', [$asset, 'unduh' => 1]) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-download"></i> Unduh SVG
-                </a>
                 <a href="{{ route('assets.label', $asset) }}" target="_blank" class="btn btn-outline-secondary">
                     <i class="bi bi-printer"></i> Cetak Label
+                </a>
+                <a href="{{ route('assets.barcode', [$asset, 'unduh' => 1]) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-download"></i> Unduh SVG
                 </a>
             </div>
         </div>
     </div>
 </div>
 
+@if ($isAdmin)
+    <div class="card-tams p-4 mb-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div>
+                <h2 class="h6 fw-semibold mb-0">Mutasi Stok (10 terbaru)</h2>
+                <small class="text-muted">
+                    Total masuk <strong class="text-success">{{ $movementTotals['masuk'] }}</strong> unit &middot;
+                    total keluar <strong class="text-danger">{{ $movementTotals['keluar'] }}</strong> unit
+                </small>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('movements.create', ['jenis' => 'masuk', 'asset_id' => $asset->id]) }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
+                </a>
+                @if ($asset->available > 0)
+                    <a href="{{ route('movements.create', ['jenis' => 'keluar', 'asset_id' => $asset->id]) }}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-box-arrow-up"></i> Barang Keluar
+                    </a>
+                @else
+                    <button type="button" class="btn btn-sm btn-danger" disabled title="Tidak ada unit yang tersedia untuk dikeluarkan">
+                        <i class="bi bi-box-arrow-up"></i> Barang Keluar
+                    </button>
+                @endif
+                <a href="{{ route('movements.index', ['q' => $asset->asset_code]) }}" class="btn btn-sm btn-outline-secondary">Lihat semua</a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th><th>Jenis</th><th>Alasan</th>
+                        <th class="text-center">Jumlah</th><th class="text-center">Stok</th>
+                        <th>Nota</th><th>Petugas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($movements as $m)
+                        <tr>
+                            <td>{{ $m->moved_at->format('d M Y') }}</td>
+                            <td><span class="badge rounded-pill text-bg-{{ $m->type === 'masuk' ? 'success' : 'danger' }}">{{ $m->type_label }}</span></td>
+                            <td>
+                                {{ $m->reason_label }}
+                                @if ($m->notes) <div class="small text-muted">{{ $m->notes }}</div> @endif
+                            </td>
+                            <td class="text-center fw-bold {{ $m->type === 'masuk' ? 'text-success' : 'text-danger' }}">
+                                {{ $m->type === 'masuk' ? '+' : '-' }}{{ $m->quantity }}
+                            </td>
+                            <td class="text-center">{{ $m->qty_before }} <i class="bi bi-arrow-right small text-muted"></i> <strong>{{ $m->qty_after }}</strong></td>
+                            <td>{{ $m->reference ?? '-' }}</td>
+                            <td>{{ $m->creator->name ?? '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="7" class="text-center text-muted py-3">Belum ada barang masuk atau keluar untuk aset ini.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endif
+
 <div class="card-tams p-4">
     <div class="d-flex justify-content-between mb-3">
         <h2 class="h6 fw-semibold mb-0">Riwayat Aset (10 terbaru)</h2>
-        @if (auth()->user()->isAdmin())
+        @if ($isAdmin)
             <a href="{{ route('histories.index', ['q' => $asset->asset_code]) }}" class="small text-decoration-none">Lihat semua</a>
         @endif
     </div>

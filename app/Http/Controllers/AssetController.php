@@ -70,7 +70,20 @@ class AssetController extends Controller
         $asset->load(['category', 'location']);
         $histories = $asset->histories()->with('user')->limit(10)->get();
 
-        return view('assets.show', compact('asset', 'histories'));
+        $movements = collect();
+        $movementTotals = ['masuk' => 0, 'keluar' => 0];
+
+        if (auth()->user()->isAdmin()) {
+            $movements = $asset->movements()->with('creator')
+                ->orderByDesc('moved_at')->orderByDesc('id')->limit(10)->get();
+
+            $movementTotals = [
+                'masuk'  => (int) $asset->movements()->where('type', 'masuk')->sum('quantity'),
+                'keluar' => (int) $asset->movements()->where('type', 'keluar')->sum('quantity'),
+            ];
+        }
+
+        return view('assets.show', compact('asset', 'histories', 'movements', 'movementTotals'));
     }
 
     public function edit(Asset $asset)
