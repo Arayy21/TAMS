@@ -38,6 +38,6 @@
         Dicetak pada {{ now()->format('d M Y H:i') }} oleh {{ auth()->user()->name }}
     </div>
 
-    @include('reports._table_' . ['aset' => 'assets', 'peminjaman' => 'loans', 'opname' => 'opname'][$type])
+    @include('reports._table_' . ['aset' => 'assets', 'peminjaman' => 'loans', 'opname' => 'opname', 'mutasi' => 'movements'][$type])
 </body>
 </html>

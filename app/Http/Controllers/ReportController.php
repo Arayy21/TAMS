@@ -19,6 +19,7 @@ use PhpOffice\PhpWord\PhpWord;
 use PhpOffice\PhpWord\Settings;
 use App\Models\StockOpname;
 use App\Models\StockOpnameItem;
+use App\Models\StockMovement;
 
 class ReportController extends Controller
 {
@@ -52,11 +53,13 @@ class ReportController extends Controller
     private function type(Request $request): string
     {
         $request->validate([
-            'jenis'     => 'nullable|in:aset,peminjaman,opname',
+            'jenis'     => 'nullable|in:aset,peminjaman,opname,mutasi',
             'dari'      => 'nullable|date',
             'sampai'    => 'nullable|date|after_or_equal:dari',
             'opname_id' => 'nullable|exists:stock_opnames,id',
             'hasil'     => 'nullable|in:selisih,belum',
+            'tipe'      => 'nullable|in:masuk,keluar',
+            'alasan'    => 'nullable|in:pembelian,rusak,dibuang',
         ], [
             'sampai.after_or_equal' => 'Tanggal akhir tidak boleh sebelum tanggal awal.',
             'opname_id.exists'      => 'Sesi opname tidak ditemukan.',
@@ -69,18 +72,34 @@ class ReportController extends Controller
     {
         return match ($type) {
             'opname'     => 'Laporan Hasil Stok Opname',
+            'mutasi'     => 'Laporan Mutasi Stok (Barang Masuk/Keluar)',
             'peminjaman' => 'Laporan Peminjaman Aset',
             default      => 'Laporan Daftar Aset',
         };
     }
+
 
     private function rows(Request $request, string $type)
     {
         return match ($type) {
             'aset'   => $this->assetRows($request),
             'opname' => $this->opnameRows($request),
+            'mutasi' => $this->movementRows($request),
             default  => $this->loanRows($request),
         };
+    }
+
+    private function movementRows(Request $request)
+    {
+        return StockMovement::with(['asset.category', 'creator'])
+            ->when($request->tipe, fn ($q, $v) => $q->where('type', $v))
+            ->when($request->alasan, fn ($q, $v) => $q->where('reason', $v))
+            ->when($request->category_id, fn ($q, $v) => $q->whereHas('asset', fn ($a) => $a->where('category_id', $v)))
+            ->when($request->dari, fn ($q, $v) => $q->whereDate('moved_at', '>=', $v))
+            ->when($request->sampai, fn ($q, $v) => $q->whereDate('moved_at', '<=', $v))
+            ->orderByDesc('moved_at')
+            ->orderByDesc('id')
+            ->get();
     }
 
     private function assetRows(Request $request)
@@ -136,6 +155,12 @@ class ReportController extends Controller
             if ($request->hasil) {
                 $f['Tampilan'] = $request->hasil === 'selisih' ? 'Hanya selisih / kondisi berbeda' : 'Belum dicek';
             }
+        } elseif ($type === 'mutasi') {
+            if ($request->tipe)        $f['Jenis']        = ucfirst($request->tipe);
+            if ($request->alasan)      $f['Alasan']       = ucfirst($request->alasan);
+            if ($request->category_id) $f['Kategori']     = Category::find($request->category_id)?->name;
+            if ($request->dari)        $f['Dari tanggal'] = Carbon::parse($request->dari)->format('d M Y');
+            if ($request->sampai)      $f['Sampai']       = Carbon::parse($request->sampai)->format('d M Y');
         } else {
             if ($request->status) $f['Status']       = ucfirst($request->status);
             if ($request->dari)   $f['Dari tanggal'] = Carbon::parse($request->dari)->format('d M Y');
@@ -221,7 +246,7 @@ class ReportController extends Controller
 
         $book  = new Spreadsheet();
         $sheet = $book->getActiveSheet();
-        $sheet->setTitle(['aset' => 'Daftar Aset', 'peminjaman' => 'Peminjaman', 'opname' => 'Hasil Opname'][$type]);
+        $sheet->setTitle(['aset' => 'Daftar Aset', 'peminjaman' => 'Peminjaman', 'opname' => 'Hasil Opname', 'mutasi' => 'Mutasi Stok'][$type]);
 
         $sheet->setCellValue('A1', 'TAMS - ' . $title);
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
@@ -307,33 +332,59 @@ class ReportController extends Controller
                     $data->sum(fn ($a) => (int) $a->borrowed_sum),
                     $data->sum(fn ($a) => max(0, $a->quantity - (int) $a->borrowed_sum)),
                     '', ''];
-            } elseif ($type === 'opname') {
-                $head = ['No', 'Sesi', 'Kode', 'Nama Aset', 'Lokasi', 'Di Sistem', 'Dipinjam', 'Seharusnya',
-                        'Fisik', 'Selisih', 'Kondisi Sistem', 'Kondisi Fisik', 'Catatan'];
+        } elseif ($type === 'opname') {
+            $head = ['No', 'Sesi', 'Kode', 'Nama Aset', 'Lokasi', 'Di Sistem', 'Dipinjam', 'Seharusnya',
+                    'Fisik', 'Selisih', 'Kondisi Sistem', 'Kondisi Fisik', 'Catatan'];
 
-                $rows = $data->values()->map(fn ($it, $i) => [
-                    $i + 1, $it->opname->code, $it->asset->asset_code, $it->asset->name, $it->asset->location->name,
-                    $it->system_qty, $it->borrowed_qty, $it->expected_qty,
-                    $it->is_checked ? $it->physical_qty : '-',
-                    $it->diff_label,
-                    ucfirst($it->system_condition),
-                    $it->physical_condition ? ucfirst($it->physical_condition) : '-',
-                    $it->notes ?? '-',
-                ])->all();
+            $rows = $data->values()->map(fn ($it, $i) => [
+                $i + 1, $it->opname->code, $it->asset->asset_code, $it->asset->name, $it->asset->location->name,
+                $it->system_qty, $it->borrowed_qty, $it->expected_qty,
+                $it->is_checked ? $it->physical_qty : '-',
+                $it->diff_label,
+                ucfirst($it->system_condition),
+                $it->physical_condition ? ucfirst($it->physical_condition) : '-',
+                $it->notes ?? '-',
+            ])->all();
 
-                $checked = $data->filter(fn ($i) => $i->is_checked);
-                $summary = 'Sesuai ' . $checked->filter(fn ($i) => $i->difference === 0)->count()
-                        . ' | Kurang ' . $checked->filter(fn ($i) => $i->difference < 0)->count()
-                        . ' | Lebih ' . $checked->filter(fn ($i) => $i->difference > 0)->count()
-                        . ' | Belum dicek ' . ($data->count() - $checked->count());
+            $checked = $data->filter(fn ($i) => $i->is_checked);
+            $summary = 'Sesuai ' . $checked->filter(fn ($i) => $i->difference === 0)->count()
+                    . ' | Kurang ' . $checked->filter(fn ($i) => $i->difference < 0)->count()
+                    . ' | Lebih ' . $checked->filter(fn ($i) => $i->difference > 0)->count()
+                    . ' | Belum dicek ' . ($data->count() - $checked->count());
 
-                $total = ['', 'Total (' . $data->count() . ' baris)', '', '', '',
-                        $data->sum('system_qty'),
-                        $data->sum('borrowed_qty'),
-                        $data->sum(fn ($i) => $i->expected_qty),
-                        $checked->sum('physical_qty'),
-                        $summary, '', '', ''];
-            } else {
+            $total = ['', 'Total (' . $data->count() . ' baris)', '', '', '',
+                    $data->sum('system_qty'),
+                    $data->sum('borrowed_qty'),
+                    $data->sum(fn ($i) => $i->expected_qty),
+                    $checked->sum('physical_qty'),
+                    $summary, '', '', ''];
+        } elseif ($type === 'mutasi') {
+            $head = ['No', 'Tanggal', 'Kode', 'Nama Aset', 'Jenis', 'Alasan', 'Jumlah',
+                    'Stok Sebelum', 'Stok Sesudah', 'Nota', 'Petugas', 'Catatan'];
+
+            $rows = $data->values()->map(fn ($m, $i) => [
+                $i + 1,
+                $m->moved_at->format('d M Y'),
+                $m->asset->asset_code,
+                $m->asset->name,
+                $m->type_label,
+                $m->reason_label,
+                ($m->type === 'masuk' ? '+' : '-') . $m->quantity,
+                $m->qty_before,
+                $m->qty_after,
+                $m->reference ?? '-',
+                $m->creator->name ?? '-',
+                $m->notes ?? '-',
+            ])->all();
+
+            $in  = (int) $data->where('type', 'masuk')->sum('quantity');
+            $out = (int) $data->where('type', 'keluar')->sum('quantity');
+            $net = $in - $out;
+
+            $total = ['', 'Total (' . $data->count() . ' mutasi)', '', '',
+                    'Masuk ' . $in, 'Keluar ' . $out, ($net > 0 ? '+' : '') . $net,
+                    '', '', '', '', ''];
+        } else {
             $head = ['No', 'Peminjam', 'Kontak / Divisi', 'Aset', 'Jumlah', 'Tgl Pinjam', 'Batas Kembali', 'Tgl Kembali', 'Status'];
 
             $rows = $data->values()->map(fn ($l, $i) => [

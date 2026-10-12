@@ -28,6 +28,10 @@
             <small class="text-muted">Pencatatan pembelian (masuk) dan barang rusak atau dibuang (keluar).</small>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ route('reports.index', ['jenis' => 'mutasi', 'tipe' => request('type'), 'alasan' => request('reason'), 'dari' => request('dari'), 'sampai' => request('sampai')]) }}"
+            class="btn btn-outline-secondary">
+                <i class="bi bi-file-earmark-text"></i> Laporan
+            </a>
             <a href="{{ route('movements.create', ['jenis' => 'masuk']) }}" class="btn btn-success">
                 <i class="bi bi-box-arrow-in-down"></i> Barang Masuk
             </a>

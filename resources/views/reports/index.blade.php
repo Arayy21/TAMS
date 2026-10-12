@@ -4,17 +4,18 @@
 @section('content')
 @include('reports._style')
 
+@php
+    $tabs  = ['aset' => 'Daftar Aset', 'peminjaman' => 'Peminjaman', 'opname' => 'Stok Opname', 'mutasi' => 'Mutasi Stok'];
+    $parts = ['aset' => 'assets', 'peminjaman' => 'loans', 'opname' => 'opname', 'mutasi' => 'movements'];
+@endphp
+
 <div class="card-tams p-4">
-    <ul class="nav nav-pills mb-3">
-        <li class="nav-item">
-            <a class="nav-link {{ $type === 'aset' ? 'active' : '' }}" href="{{ route('reports.index', ['jenis' => 'aset']) }}">Daftar Aset</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ $type === 'peminjaman' ? 'active' : '' }}" href="{{ route('reports.index', ['jenis' => 'peminjaman']) }}">Peminjaman</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ $type === 'opname' ? 'active' : '' }}" href="{{ route('reports.index', ['jenis' => 'opname']) }}">Stok Opname</a>
-        </li>
+    <ul class="nav nav-pills mb-3 flex-wrap">
+        @foreach ($tabs as $key => $label)
+            <li class="nav-item">
+                <a class="nav-link {{ $type === $key ? 'active' : '' }}" href="{{ route('reports.index', ['jenis' => $key]) }}">{{ $label }}</a>
+            </li>
+        @endforeach
     </ul>
 
     <form method="GET" action="{{ route('reports.index') }}" class="row g-2 mb-2">
@@ -53,7 +54,7 @@
                     @endforeach
                 </select>
             </div>
-                @elseif ($type === 'opname')
+        @elseif ($type === 'opname')
             <div class="col-12 col-lg-5">
                 <select name="opname_id" class="form-select">
                     <option value="">Semua sesi</option>
@@ -78,6 +79,42 @@
                     <option value="selisih" @selected(request('hasil') === 'selisih')>Hanya selisih / kondisi berbeda</option>
                     <option value="belum" @selected(request('hasil') === 'belum')>Hanya yang belum dicek</option>
                 </select>
+            </div>
+        @elseif ($type === 'mutasi')
+            <div class="col-6 col-lg-2">
+                <select name="tipe" class="form-select">
+                    <option value="">Semua jenis</option>
+                    <option value="masuk" @selected(request('tipe') === 'masuk')>Masuk</option>
+                    <option value="keluar" @selected(request('tipe') === 'keluar')>Keluar</option>
+                </select>
+            </div>
+            <div class="col-6 col-lg-2">
+                <select name="alasan" class="form-select">
+                    <option value="">Semua alasan</option>
+                    @foreach (['pembelian' => 'Pembelian', 'rusak' => 'Rusak', 'dibuang' => 'Dibuang'] as $k => $v)
+                        <option value="{{ $k }}" @selected(request('alasan') === $k)>{{ $v }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-12 col-lg-2">
+                <select name="category_id" class="form-select">
+                    <option value="">Semua kategori</option>
+                    @foreach ($categories as $c)
+                        <option value="{{ $c->id }}" @selected(request('category_id') == $c->id)>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="input-group">
+                    <span class="input-group-text">Dari</span>
+                    <input type="date" name="dari" value="{{ request('dari') }}" class="form-control">
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="input-group">
+                    <span class="input-group-text">Sampai</span>
+                    <input type="date" name="sampai" value="{{ request('sampai') }}" class="form-control">
+                </div>
             </div>
         @else
             <div class="col-12 col-lg-4">
@@ -129,7 +166,7 @@
 
     <hr>
     <div class="d-flex justify-content-between align-items-center mb-2">
-        <h2 class="h6 fw-semibold mb-0">Pratinjau {{ ['aset' => 'Daftar Aset', 'peminjaman' => 'Peminjaman', 'opname' => 'Hasil Stok Opname'][$type] }}</h2>
+        <h2 class="h6 fw-semibold mb-0">Pratinjau {{ $tabs[$type] }}</h2>
         <small class="text-muted">{{ $data->count() }} data</small>
     </div>
 
@@ -148,7 +185,7 @@
         </div>
     @else
         <div class="table-responsive">
-            @include('reports._table_' . ['aset' => 'assets', 'peminjaman' => 'loans', 'opname' => 'opname'][$type])
+            @include('reports._table_' . $parts[$type])
         </div>
     @endif
 </div>
