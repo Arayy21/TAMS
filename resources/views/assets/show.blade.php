@@ -2,7 +2,20 @@
 @section('title', 'Detail Aset')
 
 @section('content')
-@php $isAdmin = auth()->user()->isAdmin(); @endphp
+@php
+    $isAdmin = auth()->user()->isAdmin();
+    $loc     = $asset->location;
+    $photo   = $loc->photo_url;
+    $path    = ($loc->parent ? $loc->parent->name . ' › ' : '') . $loc->name;
+    $others  = max(0, $roomTotal - 1);
+@endphp
+
+<style>
+    .room-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); display: block; }
+    .room-none { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; border: 1px dashed #CFCFCF; color: #A3A3A3;
+                 display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px; }
+    .room-none i { font-size: 2rem; }
+</style>
 
 <nav class="small text-muted mb-3">
     <a href="{{ route('assets.index') }}" class="text-decoration-none">Data Aset</a> / {{ $asset->asset_code }}
@@ -31,7 +44,7 @@
                 @foreach ([
                     'Kode Aset'         => $asset->asset_code,
                     'Kategori'          => $asset->category->name,
-                    'Lokasi'            => $asset->location->name,
+                    'Lokasi'            => $path,
                     'Jumlah Unit'       => $asset->quantity . ' (tersedia ' . $asset->available . ')',
                     'Nomor Seri'        => $asset->serial_number ?? '-',
                     'Tanggal Pembelian' => $asset->purchase_date?->translatedFormat('d F Y') ?? '-',
@@ -69,6 +82,64 @@
                 <a href="{{ route('assets.barcode', [$asset, 'unduh' => 1]) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-download"></i> Unduh SVG
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Lokasi aset --}}
+<div class="card-tams p-4 mb-3">
+    <div class="row g-4 align-items-center">
+        <div class="col-12 col-md-5 col-xl-3">
+            @if ($photo)
+                <button type="button" class="btn p-0 border-0 w-100" data-bs-toggle="modal" data-bs-target="#modalRoom"
+                        aria-label="Perbesar foto {{ $loc->name }}">
+                    <img src="{{ $photo }}" alt="Foto {{ $loc->name }}" class="room-photo" loading="lazy">
+                </button>
+            @else
+                <div class="room-none">
+                    <i class="bi bi-image"></i>
+                    <div class="small mt-1">Belum ada foto ruangan</div>
+                    @if ($isAdmin)
+                        <a href="{{ route('locations.index') }}" class="small text-decoration-none mt-1">Tambah di menu Lokasi</a>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        <div class="col-12 col-md-7 col-xl-9">
+            <div class="text-muted small mb-1">Lokasi Aset</div>
+            <h2 class="h5 fw-bold mb-1">{{ $path }}</h2>
+            <div class="text-muted small mb-3">{{ $loc->description ?: 'Tidak ada deskripsi lokasi.' }}</div>
+
+            <div class="small fw-semibold mb-2">
+                Aset lain di ruangan ini
+                <span class="text-muted fw-normal">({{ $others }})</span>
+            </div>
+            @if ($roommates->isNotEmpty())
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    @foreach ($roommates as $r)
+                        <a href="{{ route('assets.show', $r) }}" class="badge text-bg-light border text-decoration-none fw-medium">
+                            {{ $r->asset_code }} &middot; {{ $r->name }}
+                        </a>
+                    @endforeach
+                    @if ($others > $roommates->count())
+                        <span class="badge text-bg-light border text-muted fw-normal">+{{ $others - $roommates->count() }} lainnya</span>
+                    @endif
+                </div>
+            @else
+                <div class="text-muted small mb-3">Tidak ada aset lain di ruangan ini.</div>
+            @endif
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('assets.index', ['location_id' => $asset->location_id]) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-list-ul"></i> Lihat semua aset di ruangan ini ({{ $roomTotal }})
+                </a>
+                @if ($isAdmin)
+                    <a href="{{ route('locations.index') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-camera"></i> Kelola foto
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -160,4 +231,20 @@
         </table>
     </div>
 </div>
+
+@if ($photo)
+    <div class="modal fade" id="modalRoom" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $path }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{{ $photo }}" alt="Foto {{ $loc->name }}" class="img-fluid rounded" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection

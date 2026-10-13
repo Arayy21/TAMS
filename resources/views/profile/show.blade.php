@@ -11,7 +11,7 @@
             <div class="text-muted small mb-2">{{ $user->email }}</div>
             <span class="badge rounded-pill text-bg-primary">{{ $user->role_label }}</span>
 
-            <<div class="profile-info text-start mt-3" style="padding:0">
+            <div class="profile-info text-start mt-3" style="padding:0">
                 <div class="row-item">
                     <span class="label">Status akun</span>
                     <span class="fw-medium text-success">Aktif</span>

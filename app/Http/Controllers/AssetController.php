@@ -65,10 +65,18 @@ class AssetController extends Controller
             ->with('success', "Aset {$asset->asset_code} berhasil ditambahkan.");
     }
 
-    public function show(Asset $asset)
+   public function show(Asset $asset)
     {
-        $asset->load(['category', 'location']);
+        $asset->load(['category', 'location.parent']);
         $histories = $asset->histories()->with('user')->limit(10)->get();
+
+        // Aset lain di ruangan yang sama
+        $roomTotal = Asset::where('location_id', $asset->location_id)->count();
+        $roommates = Asset::where('location_id', $asset->location_id)
+            ->where('id', '!=', $asset->id)
+            ->orderBy('asset_code')
+            ->limit(5)
+            ->get(['id', 'asset_code', 'name']);
 
         $movements = collect();
         $movementTotals = ['masuk' => 0, 'keluar' => 0];
@@ -83,7 +91,9 @@ class AssetController extends Controller
             ];
         }
 
-        return view('assets.show', compact('asset', 'histories', 'movements', 'movementTotals'));
+        return view('assets.show', compact(
+            'asset', 'histories', 'movements', 'movementTotals', 'roomTotal', 'roommates'
+        ));
     }
 
     public function edit(Asset $asset)

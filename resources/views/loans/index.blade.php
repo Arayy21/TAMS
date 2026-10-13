@@ -36,7 +36,7 @@
             <input type="text" name="q" value="{{ request('q') }}" class="form-control"
                    placeholder="Cari nama peminjam, kode, atau nama aset...">
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-12 col-md-3">
             <select name="status" class="form-select">
                 <option value="">Semua status</option>
                 @foreach (['dipinjam' => 'Dipinjam', 'segera' => 'Segera jatuh tempo', 'terlambat' => 'Terlambat', 'dikembalikan' => 'Dikembalikan'] as $k => $v)
@@ -44,18 +44,15 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-6 col-md-4 d-flex gap-2">
+        <div class="col-12 col-md-4 d-flex gap-2">
             <button class="btn btn-outline-primary"><i class="bi bi-search"></i> Cari</button>
             <a href="{{ route('loans.index') }}" class="btn btn-outline-secondary">Reset</a>
-            <a href="{{ route('loans.create') }}" class="btn btn-primary ms-auto">
-                <i class="bi bi-plus-lg"></i> Pinjam
-            </a>
-            </button>
+            <a href="{{ route('loans.create') }}" class="btn btn-primary ms-auto"><i class="bi bi-plus-lg"></i> Pinjam</a>
         </div>
     </form>
 
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle tbl-cards">
             <thead class="table-light">
                 <tr>
                     <th>Peminjam</th>
@@ -71,56 +68,61 @@
             <tbody>
                 @forelse ($loans as $l)
                     <tr class="{{ $l->is_overdue ? 'table-danger' : '' }}">
-                        <td>
+                        <td class="cell-title" data-label="Peminjam">
                             <div class="fw-semibold">{{ $l->borrower_name }}</div>
                             <small class="text-muted">{{ $l->borrower_contact ?? '-' }}</small>
                         </td>
-                        <td>
-                            <a href="{{ route('assets.show', $l->asset_id) }}" class="fw-semibold text-decoration-none">{{ $l->asset->asset_code }}</a>
-                            <div class="small text-muted">{{ $l->asset->name }}</div>
+                        <td data-label="Aset">
+                            <div class="cv">
+                                <a href="{{ route('assets.show', $l->asset_id) }}" class="fw-semibold text-decoration-none">{{ $l->asset->asset_code }}</a>
+                                <div class="small text-muted">{{ $l->asset->name }}</div>
+                            </div>
                         </td>
-                        <td class="text-center fw-semibold">{{ $l->quantity }}</td>
-                        <td class="text-center">
+                        <td class="cell-num text-center fw-semibold" data-label="Dipinjam">{{ $l->quantity }}</td>
+                        <td class="cell-num text-center" data-label="Tersedia">
                             {{ $l->asset->available }}
                             <span class="text-muted small">dari {{ $l->asset->quantity }}</span>
                         </td>
-                        <td>{{ $l->loaned_at->format('d M Y') }}</td>
-                        <td>
-                            {{ $l->due_at?->format('d M Y') ?? '-' }}
-                            @if (! is_null($l->days_left))
-                                <div class="small {{ $l->days_left < 0 ? 'text-danger fw-semibold' : ($l->days_left <= \App\Models\Loan::DUE_SOON_DAYS ? 'text-warning-emphasis fw-semibold' : 'text-muted') }}">
-                                    @if ($l->days_left < 0) Terlambat {{ abs($l->days_left) }} hari
-                                    @elseif ($l->days_left === 0) Jatuh tempo hari ini
-                                    @else {{ $l->days_left }} hari lagi
-                                    @endif
-                                </div>
-                            @endif
-                            @if ($l->returned_at)
-                                <div class="small text-muted">Kembali {{ $l->returned_at->format('d M Y') }}</div>
-                            @endif
+                        <td data-label="Tgl pinjam">{{ $l->loaned_at->format('d M Y') }}</td>
+                        <td data-label="Batas kembali">
+                            <div class="cv">
+                                {{ $l->due_at?->format('d M Y') ?? '-' }}
+                                @if (! is_null($l->days_left))
+                                    <div class="small {{ $l->days_left < 0 ? 'text-danger fw-semibold' : ($l->days_left <= \App\Models\Loan::DUE_SOON_DAYS ? 'text-warning-emphasis fw-semibold' : 'text-muted') }}">
+                                        @if ($l->days_left < 0) Terlambat {{ abs($l->days_left) }} hari
+                                        @elseif ($l->days_left === 0) Jatuh tempo hari ini
+                                        @else {{ $l->days_left }} hari lagi
+                                        @endif
+                                    </div>
+                                @endif
+                                @if ($l->returned_at)
+                                    <div class="small text-muted">Kembali {{ $l->returned_at->format('d M Y') }}</div>
+                                @endif
+                            </div>
                         </td>
-                        <td><span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span></td>
+                        <td class="cell-status" data-label="Status">
+                            <span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span>
+                        </td>
                         @if ($isAdmin)
-                        <td class="text-end text-nowrap">
-                            <a href="{{ route('loans.edit', $l) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i> Edit
-                            </a>
-
-                            @if ($l->is_active)
-                                <button type="button" class="btn btn-sm btn-outline-success btn-return"
-                                        data-bs-toggle="modal" data-bs-target="#modalReturn"
-                                        data-id="{{ $l->id }}"
-                                        data-min="{{ $l->loaned_at->format('Y-m-d') }}"
-                                        data-text="{{ $l->borrower_name }} mengembalikan {{ $l->quantity }} unit {{ $l->asset->name }} ({{ $l->asset->asset_code }})">
-                                    <i class="bi bi-arrow-return-left"></i> Kembalikan
-                                </button>
-                            @endif
-                        </td>
-                    @endif
+                            <td class="cell-actions text-end text-nowrap">
+                                <a href="{{ route('loans.edit', $l) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                @if ($l->is_active)
+                                    <button type="button" class="btn btn-sm btn-outline-success btn-return"
+                                            data-bs-toggle="modal" data-bs-target="#modalReturn"
+                                            data-id="{{ $l->id }}"
+                                            data-min="{{ $l->loaned_at->format('Y-m-d') }}"
+                                            data-text="{{ $l->borrower_name }} mengembalikan {{ $l->quantity }} unit {{ $l->asset->name }} ({{ $l->asset->asset_code }})">
+                                        <i class="bi bi-arrow-return-left"></i> Kembalikan
+                                    </button>
+                                @endif
+                            </td>
+                        @endif
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $isAdmin ? 8 : 7 }}" class="text-center text-muted py-5">
+                        <td colspan="{{ $isAdmin ? 8 : 7 }}" class="cell-empty text-center text-muted py-5">
                             <i class="bi bi-people fs-1"></i>
                             <p class="mb-0">Belum ada data peminjaman.</p>
                         </td>

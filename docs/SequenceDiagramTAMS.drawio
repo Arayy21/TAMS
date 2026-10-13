@@ -1,0 +1,320 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Sequence Diagram - Peminjaman" id="e3cH2vczac3z6wdTaGP3">
+    <mxGraphModel dx="1613" dy="940" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;sequenceDiagram\r\n    actor Pengguna\r\n    participant Web as Browser / Form\r\n    participant Middleware as Auth dan akun aktif\r\n    participant Controller as LoanController\r\n    participant DB as Database\r\n\r\n    Pengguna-&gt;&gt;Web: Kirim form POST /peminjam\r\n    Web-&gt;&gt;Middleware: Periksa autentikasi dan status aktif\r\n    Middleware-&gt;&gt;Controller: Teruskan request\r\n    Controller-&gt;&gt;Controller: Validasi field dan format\r\n    alt Validasi field gagal\r\n        Controller--&gt;&gt;Web: Kembali dengan error validasi\r\n        Web--&gt;&gt;Pengguna: Tampilkan error pada form\r\n    else Field valid\r\n        Controller-&gt;&gt;DB: BEGIN TRANSACTION\r\n        Controller-&gt;&gt;DB: SELECT aset FOR UPDATE\r\n        DB--&gt;&gt;Controller: Data aset terkunci\r\n        Controller-&gt;&gt;DB: Hitung unit pinjaman aktif\r\n        DB--&gt;&gt;Controller: Total unit sedang dipinjam\r\n        Controller-&gt;&gt;Controller: Periksa status, kondisi, dan sisa unit\r\n        alt Aset tidak layak atau stok tidak cukup\r\n            Controller-&gt;&gt;DB: ROLLBACK\r\n            Controller--&gt;&gt;Web: Gagal dengan error aset/jumlah\r\n            Web--&gt;&gt;Pengguna: Tampilkan pesan kegagalan\r\n        else Aset layak dan stok cukup\r\n            Controller-&gt;&gt;DB: INSERT loans (termasuk created_by)\r\n            DB--&gt;&gt;Controller: Data peminjaman tersimpan\r\n            Controller-&gt;&gt;DB: COMMIT\r\n            Controller-&gt;&gt;DB: Cari pinjaman terlambat lain milik peminjam\r\n            DB--&gt;&gt;Controller: Jumlah pinjaman terlambat\r\n            Controller--&gt;&gt;Web: Redirect ke daftar peminjaman\r\n            Web--&gt;&gt;Pengguna: Tampilkan sukses dan peringatan jika perlu\r\n        end\r\n    end&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="-9DTvP3YIc9Y7QoMal8q-1">
+          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=10;" vertex="1">
+            <mxGeometry as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Pengguna" mermaidId="n:Pengguna" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Pengguna" id="-9DTvP3YIc9Y7QoMal8q-2">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="1644" width="150" x="35" y="10" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Browser / Form" mermaidId="n:Web" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Browser / Form" id="-9DTvP3YIc9Y7QoMal8q-3">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="1619" width="150" x="394" y="10" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Auth dan akun aktif" mermaidId="n:Middleware" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Auth dan akun aktif" id="-9DTvP3YIc9Y7QoMal8q-4">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="1619" width="150" x="695" y="10" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="LoanController" mermaidId="n:Controller" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="LoanController" id="-9DTvP3YIc9Y7QoMal8q-5">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="1619" width="150" x="895" y="10" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="Database" mermaidId="n:DB" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Database" id="-9DTvP3YIc9Y7QoMal8q-6">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
+            <mxGeometry height="1619" width="150" x="1270" y="10" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <UserObject label="alt" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="-9DTvP3YIc9Y7QoMal8q-7">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" vertex="1">
+            <mxGeometry height="1213" width="1435" x="10" y="321" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-8" parent="-9DTvP3YIc9Y7QoMal8q-7" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Validasi field gagal]" vertex="1">
+          <mxGeometry height="16" width="1381" x="54" y="2" as="geometry" />
+        </mxCell>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-9" parent="-9DTvP3YIc9Y7QoMal8q-7" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=light-dark(#9370DB,#cccccc);" vertex="1">
+          <mxGeometry height="1" width="1435" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-10" parent="-9DTvP3YIc9Y7QoMal8q-7" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Field valid]" vertex="1">
+          <mxGeometry height="16" width="1435" y="177" as="geometry" />
+        </mxCell>
+        <UserObject label="alt" mermaidId="n:f1" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="-9DTvP3YIc9Y7QoMal8q-11">
+          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" vertex="1">
+            <mxGeometry height="607" width="1275" x="90" y="907" as="geometry" />
+          </mxCell>
+        </UserObject>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-12" parent="-9DTvP3YIc9Y7QoMal8q-11" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Aset tidak layak atau stok tidak cukup]" vertex="1">
+          <mxGeometry height="16" width="1221" x="54" y="2" as="geometry" />
+        </mxCell>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-13" parent="-9DTvP3YIc9Y7QoMal8q-11" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=light-dark(#9370DB,#cccccc);" vertex="1">
+          <mxGeometry height="1" width="1275" y="229" as="geometry" />
+        </mxCell>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-14" parent="-9DTvP3YIc9Y7QoMal8q-11" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Aset layak dan stok cukup]" vertex="1">
+          <mxGeometry height="16" width="1275" y="231" as="geometry" />
+        </mxCell>
+        <UserObject label="Kirim form POST /peminjam" mermaidId="e:Pengguna-&gt;Web#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Kirim form POST /peminjam" id="-9DTvP3YIc9Y7QoMal8q-15">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-2" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="290" y="119" />
+              </Array>
+              <mxPoint x="110" y="119" as="sourcePoint" />
+              <mxPoint x="469" y="119" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Periksa autentikasi dan status aktif" mermaidId="e:Web-&gt;Middleware#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Periksa autentikasi dan status aktif" id="-9DTvP3YIc9Y7QoMal8q-16">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-4">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="620" y="163" />
+              </Array>
+              <mxPoint x="469" y="163" as="sourcePoint" />
+              <mxPoint x="770" y="163" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Teruskan request" mermaidId="e:Middleware-&gt;Controller#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Teruskan request" id="-9DTvP3YIc9Y7QoMal8q-17">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-4" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="870" y="207" />
+              </Array>
+              <mxPoint x="770" y="207" as="sourcePoint" />
+              <mxPoint x="970" y="207" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Controller-&gt;Controller#0" mermaidBaseStyle="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="-9DTvP3YIc9Y7QoMal8q-18">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1005" y="281" />
+                <mxPoint x="1009" y="293" />
+                <mxPoint x="1005" y="305" />
+              </Array>
+              <mxPoint x="970" y="281" as="sourcePoint" />
+              <mxPoint x="970" y="305" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-19" parent="-9DTvP3YIc9Y7QoMal8q-1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;fontColor=light-dark(#333333,#cccccc);" value="Validasi field dan format" vertex="1">
+          <mxGeometry height="18" width="200" x="870" y="257" as="geometry" />
+        </mxCell>
+        <UserObject label="Kembali dengan error validasi" mermaidId="e:Controller-&gt;Web#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Kembali dengan error validasi" id="-9DTvP3YIc9Y7QoMal8q-20">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="720" y="396" />
+              </Array>
+              <mxPoint x="970" y="396" as="sourcePoint" />
+              <mxPoint x="469" y="396" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Tampilkan error pada form" mermaidId="e:Web-&gt;Pengguna#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan error pada form" id="-9DTvP3YIc9Y7QoMal8q-21">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="290" y="450" />
+              </Array>
+              <mxPoint x="469" y="450" as="sourcePoint" />
+              <mxPoint x="110" y="450" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="BEGIN TRANSACTION" mermaidId="e:Controller-&gt;DB#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="BEGIN TRANSACTION" id="-9DTvP3YIc9Y7QoMal8q-22">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="540" />
+              </Array>
+              <mxPoint x="970" y="540" as="sourcePoint" />
+              <mxPoint x="1345" y="540" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="SELECT aset FOR UPDATE" mermaidId="e:Controller-&gt;DB#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SELECT aset FOR UPDATE" id="-9DTvP3YIc9Y7QoMal8q-23">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="594" />
+              </Array>
+              <mxPoint x="970" y="594" as="sourcePoint" />
+              <mxPoint x="1345" y="594" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Data aset terkunci" mermaidId="e:DB-&gt;Controller#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Data aset terkunci" id="-9DTvP3YIc9Y7QoMal8q-24">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="648" />
+              </Array>
+              <mxPoint x="1345" y="648" as="sourcePoint" />
+              <mxPoint x="970" y="648" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Hitung unit pinjaman aktif" mermaidId="e:Controller-&gt;DB#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Hitung unit pinjaman aktif" id="-9DTvP3YIc9Y7QoMal8q-25">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="702" />
+              </Array>
+              <mxPoint x="970" y="702" as="sourcePoint" />
+              <mxPoint x="1345" y="702" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Total unit sedang dipinjam" mermaidId="e:DB-&gt;Controller#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Total unit sedang dipinjam" id="-9DTvP3YIc9Y7QoMal8q-26">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="756" />
+              </Array>
+              <mxPoint x="1345" y="756" as="sourcePoint" />
+              <mxPoint x="970" y="756" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="" mermaidId="e:Controller-&gt;Controller#1" mermaidBaseStyle="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="-9DTvP3YIc9Y7QoMal8q-27">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1005" y="857" />
+                <mxPoint x="1009" y="869" />
+                <mxPoint x="1005" y="881" />
+              </Array>
+              <mxPoint x="970" y="857" as="sourcePoint" />
+              <mxPoint x="970" y="881" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <mxCell id="-9DTvP3YIc9Y7QoMal8q-28" parent="-9DTvP3YIc9Y7QoMal8q-1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;fontColor=light-dark(#333333,#cccccc);" value="Periksa status, kondisi, dan sisa unit" vertex="1">
+          <mxGeometry height="18" width="200" x="870" y="833" as="geometry" />
+        </mxCell>
+        <UserObject label="ROLLBACK" mermaidId="e:Controller-&gt;DB#3" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="ROLLBACK" id="-9DTvP3YIc9Y7QoMal8q-29">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="982" />
+              </Array>
+              <mxPoint x="970" y="982" as="sourcePoint" />
+              <mxPoint x="1345" y="982" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Gagal dengan error aset/jumlah" mermaidId="e:Controller-&gt;Web#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Gagal dengan error aset/jumlah" id="-9DTvP3YIc9Y7QoMal8q-30">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="720" y="1036" />
+              </Array>
+              <mxPoint x="970" y="1036" as="sourcePoint" />
+              <mxPoint x="469" y="1036" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Tampilkan pesan kegagalan" mermaidId="e:Web-&gt;Pengguna#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan pesan kegagalan" id="-9DTvP3YIc9Y7QoMal8q-31">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="290" y="1090" />
+              </Array>
+              <mxPoint x="469" y="1090" as="sourcePoint" />
+              <mxPoint x="110" y="1090" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="INSERT loans (termasuk created_by)" mermaidId="e:Controller-&gt;DB#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="INSERT loans (termasuk created_by)" id="-9DTvP3YIc9Y7QoMal8q-32">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="1180" />
+              </Array>
+              <mxPoint x="970" y="1180" as="sourcePoint" />
+              <mxPoint x="1345" y="1180" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Data peminjaman tersimpan" mermaidId="e:DB-&gt;Controller#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Data peminjaman tersimpan" id="-9DTvP3YIc9Y7QoMal8q-33">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="1234" />
+              </Array>
+              <mxPoint x="1345" y="1234" as="sourcePoint" />
+              <mxPoint x="970" y="1234" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="COMMIT" mermaidId="e:Controller-&gt;DB#5" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="COMMIT" id="-9DTvP3YIc9Y7QoMal8q-34">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="1288" />
+              </Array>
+              <mxPoint x="970" y="1288" as="sourcePoint" />
+              <mxPoint x="1345" y="1288" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Cari pinjaman terlambat lain milik peminjam" mermaidId="e:Controller-&gt;DB#6" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Cari pinjaman terlambat lain milik peminjam" id="-9DTvP3YIc9Y7QoMal8q-35">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="1342" />
+              </Array>
+              <mxPoint x="970" y="1342" as="sourcePoint" />
+              <mxPoint x="1345" y="1342" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Jumlah pinjaman terlambat" mermaidId="e:DB-&gt;Controller#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Jumlah pinjaman terlambat" id="-9DTvP3YIc9Y7QoMal8q-36">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="1158" y="1396" />
+              </Array>
+              <mxPoint x="1345" y="1396" as="sourcePoint" />
+              <mxPoint x="970" y="1396" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Redirect ke daftar peminjaman" mermaidId="e:Controller-&gt;Web#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Redirect ke daftar peminjaman" id="-9DTvP3YIc9Y7QoMal8q-37">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="720" y="1450" />
+              </Array>
+              <mxPoint x="970" y="1450" as="sourcePoint" />
+              <mxPoint x="469" y="1450" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+        <UserObject label="Tampilkan sukses dan peringatan jika perlu" mermaidId="e:Web-&gt;Pengguna#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan sukses dan peringatan jika perlu" id="-9DTvP3YIc9Y7QoMal8q-38">
+          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
+            <mxGeometry relative="1" as="geometry">
+              <Array as="points">
+                <mxPoint x="290" y="1504" />
+              </Array>
+              <mxPoint x="469" y="1504" as="sourcePoint" />
+              <mxPoint x="110" y="1504" as="targetPoint" />
+            </mxGeometry>
+          </mxCell>
+        </UserObject>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

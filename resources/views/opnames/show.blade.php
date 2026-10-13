@@ -59,13 +59,14 @@
         <strong>Seharusnya = jumlah di sistem &minus; dipinjam</strong>. Jika semua sesuai, klik <strong>Sesuai</strong>
         agar terisi otomatis.
     </div>
+
     @unless ($editable)
-    <div class="alert alert-success small mt-3 mb-0">
+        <div class="alert alert-success small mt-3 mb-0">
             <i class="bi bi-check-circle me-1"></i>
             Diselesaikan oleh <strong>{{ $opname->finisher->name ?? '-' }}</strong>
             pada {{ $opname->finished_at?->format('d M Y H:i') ?? '-' }}.
             {{ $opname->adjustments_applied ? 'Hasil sudah diterapkan ke data aset.' : 'Hasil hanya dicatat, data aset tidak diubah.' }}
-    </div>
+        </div>
     @endunless
 </div>
 
@@ -76,7 +77,7 @@
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
                     <input type="text" id="scanKode" class="form-control" placeholder="Scan barcode aset, lalu ketik jumlah fisik dan tekan Enter"
-                        autocomplete="off" autocapitalize="characters" maxlength="30">
+                           autocomplete="off" autocapitalize="characters" maxlength="30">
                     <button type="button" class="btn btn-outline-secondary" id="btnScanCam">
                         <i class="bi bi-camera-video"></i> Kamera
                     </button>
@@ -85,6 +86,7 @@
             </div>
         </div>
     @endif
+
     <div class="row g-2 mb-3">
         <div class="col-12 col-md-5">
             <input type="text" id="q" class="form-control" placeholder="Cari kode atau nama aset...">
@@ -101,7 +103,7 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle tbl-cards">
             <thead class="table-light">
                 <tr>
                     <th>Aset</th>
@@ -130,27 +132,29 @@
                         data-diff="{{ $it->is_checked && $diff !== 0 ? 1 : 0 }}"
                         data-expected="{{ $it->expected_qty }}"
                         data-syscond="{{ $it->system_condition }}">
-                        <td>
+                        <td class="cell-title" data-label="Aset">
                             <a href="{{ route('assets.show', $it->asset_id) }}" target="_blank" class="fw-semibold text-decoration-none">{{ $it->asset->asset_code }}</a>
                             <div>{{ $it->asset->name }}</div>
                             <small class="text-muted">{{ $it->asset->category->name }} &middot; {{ $it->asset->location->name }}</small>
                         </td>
-                        <td class="text-center">{{ $it->system_qty }}</td>
-                        <td class="text-center">{{ $it->borrowed_qty }}</td>
-                        <td class="text-center fw-bold">{{ $it->expected_qty }}</td>
-                        <td><span class="badge rounded-pill text-bg-{{ $condColor[$it->system_condition] }}">{{ ucfirst($it->system_condition) }}</span></td>
-                        <td>
-                            <input type="number" min="0" class="form-control form-control-sm qty-input"
+                        <td class="cell-num text-center" data-label="Di sistem">{{ $it->system_qty }}</td>
+                        <td class="cell-num text-center" data-label="Dipinjam">{{ $it->borrowed_qty }}</td>
+                        <td class="cell-num text-center fw-bold" data-label="Seharusnya">{{ $it->expected_qty }}</td>
+                        <td data-label="Kondisi sistem">
+                            <span class="badge rounded-pill text-bg-{{ $condColor[$it->system_condition] }}">{{ ucfirst($it->system_condition) }}</span>
+                        </td>
+                        <td data-label="Hitung fisik">
+                            <input type="number" min="0" inputmode="numeric" class="form-control form-control-sm qty-input"
                                    value="{{ $it->physical_qty }}" @disabled(! $editable)>
                         </td>
-                        <td>
+                        <td data-label="Kondisi fisik">
                             <select class="form-select form-select-sm cond-input" @disabled(! $editable)>
                                 @foreach (['baik', 'rusak', 'perbaikan'] as $c)
                                     <option value="{{ $c }}" @selected($cond === $c)>{{ ucfirst($c) }}</option>
                                 @endforeach
                             </select>
                         </td>
-                        <td class="diff-cell">
+                        <td class="diff-cell" data-label="Selisih">
                             @if (! $it->is_checked)
                                 <span class="text-muted">-</span>
                             @elseif ($diff === 0)
@@ -161,12 +165,12 @@
                                 <span class="badge rounded-pill text-bg-warning">Lebih {{ $diff }}</span>
                             @endif
                         </td>
-                        <td>
+                        <td class="cell-stack" data-label="Catatan">
                             <input type="text" maxlength="255" class="form-control form-control-sm note-input"
                                    value="{{ $it->notes }}" @disabled(! $editable)>
                         </td>
                         @if ($editable)
-                            <td class="text-end text-nowrap">
+                            <td class="cell-actions text-end text-nowrap">
                                 <button type="button" class="btn btn-sm btn-outline-success btn-ok">Sesuai</button>
                                 <button type="button" class="btn btn-sm btn-primary btn-save">Simpan</button>
                                 <div class="row-msg small mt-1"></div>
@@ -178,7 +182,10 @@
         </table>
     </div>
 </div>
-@include('scan._camera')
+
+@if ($editable)
+    @include('scan._camera')
+@endif
 @endsection
 
 @push('scripts')
@@ -276,9 +283,7 @@
         qty.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); save.click(); } });
     });
 </script>
-@endpush
 
-@push('scripts')
 <script>
 (function () {
     var inp = document.getElementById('scanKode');

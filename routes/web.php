@@ -45,6 +45,7 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
         Route::post('aset/label-massal', [LabelController::class, 'bulk'])->name('assets.labels');
         Route::get('scan', [ScanController::class, 'index'])->name('scan.index');
         Route::get('scan/cari', [ScanController::class, 'find'])->name('scan.find');
+        Route::get('lokasi/{location}/foto', [LocationController::class, 'photo'])->name('locations.photo');
     });
 
     Route::middleware('can:manage-users')->group(function () {

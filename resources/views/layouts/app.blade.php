@@ -203,6 +203,56 @@
             .modal-dialog:not(.modal-sm):not(.modal-fullscreen-sm-down) { margin: .5rem; }
             .pagination { flex-wrap: wrap; justify-content: center; }
         }
+
+        /* ===== Tabel menjadi kartu di HP ===== */
+    @media (max-width: 767.98px) {
+        .tbl-cards, .tbl-cards tbody { display: block; width: 100%; }
+        .tbl-cards thead { display: none; }
+
+        .tbl-cards tbody tr { display: flex; flex-wrap: wrap; background: #fff; border: 1px solid var(--border);
+                            border-radius: 14px; padding: 6px 14px 12px; margin-bottom: 12px; }
+        .tbl-cards tbody tr.table-danger  { background: #FDF1F1; border-color: #F1B8B8; }
+        .tbl-cards tbody tr.table-warning { background: #FFF8E1; border-color: #F5D58A; }
+        .tbl-cards tbody tr.row-checked   { border-left: 5px solid var(--success); }
+
+        .tbl-cards tbody td { display: flex !important; flex: 1 1 100%; justify-content: space-between; align-items: center;
+                            gap: 12px; min-width: 0; order: 2; text-align: right; padding: 7px 0 !important;
+                            border: 0 !important; box-shadow: none !important; background: transparent !important; }
+        .tbl-cards tbody td::before { content: attr(data-label); flex-shrink: 0; text-align: left;
+                                    font-size: 12px; font-weight: 500; color: var(--muted); }
+        .tbl-cards .cv { text-align: right; min-width: 0; }
+
+        /* Judul kartu */
+        .tbl-cards tbody td.cell-title { order: 0; flex-direction: column; align-items: flex-start; text-align: left;
+                                        padding: 8px 0 10px !important; margin-bottom: 4px;
+                                        border-bottom: 1px solid var(--border) !important; }
+        .tbl-cards tbody td.cell-title::before { display: none; }
+
+        /* Angka ringkas berdampingan */
+        .tbl-cards tbody td.cell-num { order: 1; flex: 1 1 30%; flex-direction: column; justify-content: center; text-align: center;
+                                    gap: 2px; margin: 6px 3px 2px; padding: 8px 4px !important;
+                                    background: var(--surface-2) !important; border-radius: 10px; }
+        .tbl-cards tbody td.cell-num::before { font-size: 11px; text-align: center; }
+        .tbl-cards tbody td.cell-status { order: 1; }
+
+        /* Kolom catatan: label di atas, isian selebar kartu */
+        .tbl-cards tbody td.cell-stack { flex-direction: column; align-items: stretch; text-align: left; gap: 4px; }
+        .tbl-cards .cell-stack .note-input { width: 100%; min-width: 0; }
+
+        .tbl-cards .qty-input  { width: 120px; text-align: right; }
+        .tbl-cards .cond-input { width: auto; min-width: 150px; }
+        .tbl-cards .form-control-sm, .tbl-cards .form-select-sm { min-height: 42px; }
+
+        /* Tombol aksi */
+        .tbl-cards tbody td.cell-actions { order: 3; flex-wrap: wrap; justify-content: stretch; gap: 8px; padding-top: 10px !important; }
+        .tbl-cards tbody td.cell-actions::before { display: none; }
+        .tbl-cards .cell-actions .btn { flex: 1 1 0; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .tbl-cards .cell-actions .row-msg { flex-basis: 100%; text-align: center; }
+
+        /* Pesan "tidak ada data" */
+        .tbl-cards tbody td.cell-empty { display: block !important; order: 0; text-align: center; }
+        .tbl-cards tbody td.cell-empty::before { display: none; }
+    }
     </style>
 </head>
 <body data-page="{{ request()->route()?->getName() }}">
