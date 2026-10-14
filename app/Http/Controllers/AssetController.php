@@ -69,6 +69,10 @@ class AssetController extends Controller
     {
         $asset->load(['category', 'location.parent']);
         $histories = $asset->histories()->with('user')->limit(10)->get();
+        $activeLoans = $asset->loans()->active()
+                ->with(['originLocation.parent', 'lastLocation.parent'])
+                ->orderBy('due_at')
+                ->get();
 
         // Aset lain di ruangan yang sama
         $roomTotal = Asset::where('location_id', $asset->location_id)->count();

@@ -19,6 +19,24 @@
         <div class="row g-3">
 
             <div class="col-12">
+                <div class="col-md-6">
+                    <label for="last_location_id" class="form-label">Lokasi Pemakaian <span class="text-danger">*</span></label>
+                    <select name="last_location_id" id="last_location_id" class="form-select @error('last_location_id') is-invalid @enderror">
+                        <option value="">Pilih lokasi</option>
+                        @foreach ($locations as $l)
+                            <option value="{{ $l->id }}" @selected(old('last_location_id') == $l->id)>{{ $l->full_name }}</option>
+                        @endforeach
+                    </select>
+                    @error('last_location_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    <div class="form-text">Tempat barang dipakai atau disimpan selama dipinjam.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Detail Lokasi <span class="text-muted">(opsional)</span></label>
+                    <input type="text" name="last_location_note" value="{{ old('last_location_note') }}" maxlength="100"
+                        placeholder="Contoh: Meja Pak Budi, lantai 2"
+                        class="form-control @error('last_location_note') is-invalid @enderror">
+                    @error('last_location_note') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
                 <label class="form-label">Scan Barcode Aset <span class="text-muted">(opsional)</span></label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>

@@ -145,6 +145,67 @@
     </div>
 </div>
 
+<div class="card-tams p-4 mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="h6 fw-semibold mb-0">Sedang Dipinjam</h2>
+            <small class="text-muted">
+                {{ $activeLoans->count() ? $activeLoans->sum('quantity') . ' unit dipinjam oleh ' . $activeLoans->count() . ' peminjam' : 'Tidak ada unit yang sedang dipinjam' }}
+            </small>
+        </div>
+        <a href="{{ route('loans.index', ['q' => $asset->asset_code]) }}" class="small text-decoration-none">Lihat di Peminjam</a>
+    </div>
+
+    @if ($activeLoans->isNotEmpty())
+        <div class="table-responsive">
+            <table class="table table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>Peminjam</th><th class="text-center">Jumlah</th><th>Lokasi Awal</th><th>Lokasi Terakhir</th><th>Tgl Pinjam</th><th>Batas Kembali</th></tr>
+                </thead>
+                <tbody>
+                    @foreach ($activeLoans as $ln)
+                        <tr class="{{ $ln->is_overdue ? 'table-danger' : '' }}">
+                            <td>
+                                <div class="fw-semibold">{{ $ln->borrower_name }}</div>
+                                <small class="text-muted">{{ $ln->borrower_contact ?? '-' }}</small>
+                            </td>
+                            <td class="text-center fw-bold">{{ $ln->quantity }}</td>
+                            <td>
+                                @if ($ln->origin_location_id)
+                                    <div class="fw-medium">{{ $ln->originLocation->full_name }}</div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($ln->last_location_id)
+                                    <div class="fw-medium">{{ $ln->lastLocation->full_name }}</div>
+                                    @if ($ln->last_location_note) <small class="text-muted">{{ $ln->last_location_note }}</small> @endif
+                                @else
+                                    <span class="text-muted">Belum dicatat</span>
+                                @endif
+                            </td>
+                            <td>{{ $ln->loaned_at->format('d M Y') }}</td>
+                            <td>
+                                {{ $ln->due_at?->format('d M Y') ?? '-' }}
+                                @if (! is_null($ln->days_left))
+                                    <div class="small {{ $ln->days_left < 0 ? 'text-danger fw-semibold' : 'text-muted' }}">
+                                        @if ($ln->days_left < 0) Terlambat {{ abs($ln->days_left) }} hari
+                                        @elseif ($ln->days_left === 0) Jatuh tempo hari ini
+                                        @else {{ $ln->days_left }} hari lagi
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="text-muted small">Aset ini sedang berada di lokasi asalnya.</div>
+    @endif
+</div>
 @if ($isAdmin)
     <div class="card-tams p-4 mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">

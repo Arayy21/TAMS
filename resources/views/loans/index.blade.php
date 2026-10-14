@@ -57,6 +57,8 @@
                 <tr>
                     <th>Peminjam</th>
                     <th>Aset</th>
+                    <th>Lokasi Awal</th>
+                    <th>Lokasi Terakhir</th>
                     <th class="text-center">Dipinjam</th>
                     <th class="text-center">Sisa Tersedia</th>
                     <th>Tgl Pinjam</th>
@@ -76,6 +78,28 @@
                             <div class="cv">
                                 <a href="{{ route('assets.show', $l->asset_id) }}" class="fw-semibold text-decoration-none">{{ $l->asset->asset_code }}</a>
                                 <div class="small text-muted">{{ $l->asset->name }}</div>
+                            </div>
+                        </td>
+                        {{-- Lokasi awal --}}
+                        <td data-label="Lokasi awal">
+                            <div class="cv">
+                                @if ($l->origin_location_id)
+                                    <div class="fw-medium">{{ $l->originLocation->full_name }}</div>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td data-label="Lokasi terakhir">
+                            <div class="cv">
+                                @if ($l->last_location_id)
+                                    <div class="fw-medium">{{ $l->lastLocation->full_name }}</div>
+                                    @if ($l->last_location_note)
+                                        <div class="small text-muted">{{ $l->last_location_note }}</div>
+                                    @endif
+                                @else
+                                    <span class="text-muted">Belum dicatat</span>
+                                @endif
                             </div>
                         </td>
                         <td class="cell-num text-center fw-semibold" data-label="Dipinjam">{{ $l->quantity }}</td>
@@ -122,7 +146,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $isAdmin ? 8 : 7 }}" class="cell-empty text-center text-muted py-5">
+                        <td colspan="{{ $isAdmin ? 10 : 9 }}" class="cell-empty text-center text-muted py-5">
                             <i class="bi bi-people fs-1"></i>
                             <p class="mb-0">Belum ada data peminjaman.</p>
                         </td>

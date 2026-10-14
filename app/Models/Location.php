@@ -30,4 +30,10 @@ class Location extends Model
             ? route('locations.photo', ['location' => $this->id], false) . '?v=' . ($this->updated_at?->timestamp ?? 0)
             : null;
     }
+
+        // Nama lengkap, contoh: Gedung Utama › Ruang Rapat
+    public function getFullNameAttribute(): string
+    {
+        return ($this->parent ? $this->parent->name . ' › ' : '') . $this->name;
+    }
 }

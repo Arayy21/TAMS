@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Loan;
+use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -13,7 +14,7 @@ class LoanController extends Controller
 {
     public function index(Request $request)
     {
-        $loans = Loan::with('asset')
+        $loans = Loan::with(['asset', 'originLocation.parent', 'lastLocation.parent'])
             ->when($request->q, function ($q, $v) {
                 $q->where(function ($w) use ($v) {
                     $w->where('borrower_name', 'like', "%{$v}%")
@@ -25,8 +26,8 @@ class LoanController extends Controller
             ->when($request->status, function ($q, $v) {
                 match ($v) {
                     'dipinjam'     => $q->active(),
-                    'terlambat'    => $q->active()->whereNotNull('due_at')->whereDate('due_at', '<', today()),
                     'segera'       => $q->dueSoon(),
+                    'terlambat'    => $q->active()->whereNotNull('due_at')->whereDate('due_at', '<', today()),
                     'dikembalikan' => $q->whereNotNull('returned_at'),
                     default        => $q,
                 };
@@ -60,26 +61,31 @@ class LoanController extends Controller
             'assets'           => $this->availableAssets(),
             'selected'         => $request->asset_id,
             'overdueBorrowers' => $overdueBorrowers,
+            'locations'        => $this->locationOptions(),
         ]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'asset_id'         => ['required', Rule::exists('assets', 'id')->whereNull('deleted_at')],
-            'borrower_name'    => 'required|string|max:100',
-            'borrower_contact' => 'nullable|string|max:50',
-            'quantity'         => 'required|integer|min:1',
-            'loaned_at'        => 'required|date',
-            'due_at'           => 'nullable|date|after_or_equal:loaned_at',
-            'notes'            => 'nullable|string|max:255',
+            'asset_id'           => ['required', Rule::exists('assets', 'id')->whereNull('deleted_at')],
+            'borrower_name'      => 'required|string|max:100',
+            'borrower_contact'   => 'nullable|string|max:50',
+            'quantity'           => 'required|integer|min:1',
+            'loaned_at'          => 'required|date',
+            'due_at'             => 'nullable|date|after_or_equal:loaned_at',
+            'last_location_id'   => 'required|exists:locations,id',
+            'last_location_note' => 'nullable|string|max:100',
+            'notes'              => 'nullable|string|max:255',
         ], [
-            'asset_id.required'      => 'Pilih aset yang dipinjam.',
-            'borrower_name.required' => 'Nama peminjam wajib diisi.',
-            'quantity.required'      => 'Jumlah wajib diisi.',
-            'quantity.min'           => 'Jumlah minimal 1.',
-            'loaned_at.required'     => 'Tanggal pinjam wajib diisi.',
-            'due_at.after_or_equal'  => 'Batas kembali tidak boleh sebelum tanggal pinjam.',
+            'asset_id.required'         => 'Pilih aset yang dipinjam.',
+            'borrower_name.required'    => 'Nama peminjam wajib diisi.',
+            'quantity.required'         => 'Jumlah wajib diisi.',
+            'quantity.min'              => 'Jumlah minimal 1.',
+            'loaned_at.required'        => 'Tanggal pinjam wajib diisi.',
+            'due_at.after_or_equal'     => 'Batas kembali tidak boleh sebelum tanggal pinjam.',
+            'last_location_id.required' => 'Pilih lokasi pemakaian barang.',
+            'last_location_id.exists'   => 'Lokasi tidak ditemukan.',
         ]);
 
         $loan = DB::transaction(function () use ($data) {
@@ -99,7 +105,11 @@ class LoanController extends Controller
                 ]);
             }
 
-            return Loan::create($data + ['created_by' => auth()->id()]);
+            return Loan::create($data + [
+                'created_by'         => auth()->id(),
+                'last_location_at'   => now(),
+                'origin_location_id' => $asset->location_id,
+            ]);
         });
 
         $redirect = redirect()->route('loans.index')
@@ -117,19 +127,6 @@ class LoanController extends Controller
         return $redirect;
     }
 
-    // Aset yang bisa dipinjam beserta sisa stoknya
-    private function availableAssets()
-    {
-        return Asset::where('status', 'aktif')
-            ->where('asset_condition', 'baik')
-            ->withSum(['loans as borrowed_sum' => fn ($q) => $q->whereNull('returned_at')], 'quantity')
-            ->orderBy('name')
-            ->get()
-            ->each(fn ($a) => $a->available_qty = max(0, $a->quantity - (int) $a->borrowed_sum))
-            ->filter(fn ($a) => $a->available_qty > 0)
-            ->values();
-    }
-
     public function returnLoan(Request $request, Loan $loan)
     {
         $data = $request->validate([
@@ -139,6 +136,8 @@ class LoanController extends Controller
             'returned_at.before_or_equal' => 'Tanggal pengembalian tidak boleh melebihi hari ini.',
             'returned_at.after_or_equal'  => 'Tanggal pengembalian tidak boleh sebelum tanggal pinjam.',
         ]);
+
+        $already = false;
 
         DB::transaction(function () use ($loan, $data, &$already) {
             // Kunci baris agar tidak dikembalikan dua kali bersamaan
@@ -152,7 +151,7 @@ class LoanController extends Controller
             $fresh->update(['returned_at' => $data['returned_at']]);
         });
 
-        if (! empty($already)) {
+        if ($already) {
             return back()->with('info', 'Peminjaman ini sudah dikembalikan sebelumnya.');
         }
 
@@ -161,25 +160,32 @@ class LoanController extends Controller
 
     public function edit(Loan $loan)
     {
-        $loan->load('asset');
+        $loan->load(['asset', 'originLocation.parent']);
 
         // Batas jumlah: total unit dikurangi unit yang dipinjam peminjam lain (hanya untuk peminjaman aktif)
         $maxQty = $loan->is_active
             ? $loan->asset->quantity - ($loan->asset->borrowed - $loan->quantity)
             : null;
 
-        return view('loans.edit', compact('loan', 'maxQty'));
+        return view('loans.edit', [
+            'loan'      => $loan,
+            'maxQty'    => $maxQty,
+            'locations' => $this->locationOptions(),
+        ]);
     }
 
     public function update(Request $request, Loan $loan)
     {
         $rules = [
-            'borrower_name'    => 'required|string|max:100',
-            'borrower_contact' => 'nullable|string|max:50',
-            'quantity'         => 'required|integer|min:1',
-            'loaned_at'        => 'required|date',
-            'due_at'           => 'nullable|date|after_or_equal:loaned_at',
-            'notes'            => 'nullable|string|max:255',
+            'borrower_name'      => 'required|string|max:100',
+            'borrower_contact'   => 'nullable|string|max:50',
+            'quantity'           => 'required|integer|min:1',
+            'loaned_at'          => 'required|date',
+            'due_at'             => 'nullable|date|after_or_equal:loaned_at',
+            'notes'              => 'nullable|string|max:255',
+            // Peminjaman yang masih aktif wajib punya lokasi, yang sudah kembali boleh kosong
+            'last_location_id'   => ($loan->returned_at ? 'nullable' : 'required') . '|exists:locations,id',
+            'last_location_note' => 'nullable|string|max:100',
         ];
 
         if ($loan->returned_at) {
@@ -187,13 +193,15 @@ class LoanController extends Controller
         }
 
         $data = $request->validate($rules, [
-            'borrower_name.required'     => 'Nama peminjam wajib diisi.',
-            'quantity.required'          => 'Jumlah wajib diisi.',
-            'quantity.min'               => 'Jumlah minimal 1.',
-            'loaned_at.required'         => 'Tanggal pinjam wajib diisi.',
-            'due_at.after_or_equal'      => 'Batas kembali tidak boleh sebelum tanggal pinjam.',
-            'returned_at.after_or_equal' => 'Tanggal dikembalikan tidak boleh sebelum tanggal pinjam.',
-            'returned_at.before_or_equal'=> 'Tanggal dikembalikan tidak boleh melebihi hari ini.',
+            'borrower_name.required'      => 'Nama peminjam wajib diisi.',
+            'quantity.required'           => 'Jumlah wajib diisi.',
+            'quantity.min'                => 'Jumlah minimal 1.',
+            'loaned_at.required'          => 'Tanggal pinjam wajib diisi.',
+            'due_at.after_or_equal'       => 'Batas kembali tidak boleh sebelum tanggal pinjam.',
+            'returned_at.after_or_equal'  => 'Tanggal dikembalikan tidak boleh sebelum tanggal pinjam.',
+            'returned_at.before_or_equal' => 'Tanggal dikembalikan tidak boleh melebihi hari ini.',
+            'last_location_id.required'   => 'Pilih lokasi terakhir barang.',
+            'last_location_id.exists'     => 'Lokasi tidak ditemukan.',
         ]);
 
         $noChange = false;
@@ -216,6 +224,11 @@ class LoanController extends Controller
 
             $fresh->fill($data);
 
+            // Catat kapan lokasi terakhir diperbarui
+            if ($fresh->isDirty('last_location_id') || $fresh->isDirty('last_location_note')) {
+                $fresh->last_location_at = now();
+            }
+
             if (! $fresh->isDirty()) {
                 $noChange = true;
                 return;
@@ -230,5 +243,26 @@ class LoanController extends Controller
 
         return redirect()->route('loans.index')
             ->with('success', "Data peminjaman {$data['borrower_name']} berhasil diperbarui.");
+    }
+
+    // Aset yang bisa dipinjam beserta sisa stoknya
+    private function availableAssets()
+    {
+        return Asset::where('status', 'aktif')
+            ->where('asset_condition', 'baik')
+            ->withSum(['loans as borrowed_sum' => fn ($q) => $q->whereNull('returned_at')], 'quantity')
+            ->orderBy('name')
+            ->get()
+            ->each(fn ($a) => $a->available_qty = max(0, $a->quantity - (int) $a->borrowed_sum))
+            ->filter(fn ($a) => $a->available_qty > 0)
+            ->values();
+    }
+
+    // Daftar lokasi untuk pilihan, diurutkan menurut nama lengkap
+    private function locationOptions()
+    {
+        return Location::with('parent')->get()
+            ->sortBy('full_name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
     }
 }

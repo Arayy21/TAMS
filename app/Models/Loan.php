@@ -9,12 +9,14 @@ class Loan extends Model
     protected $fillable = [
         'asset_id', 'borrower_name', 'borrower_contact', 'quantity',
         'loaned_at', 'due_at', 'returned_at', 'notes', 'created_by',
+        'origin_location_id', 'last_location_id', 'last_location_note', 'last_location_at',
     ];
 
     protected $casts = [
         'loaned_at'   => 'date',
         'due_at'      => 'date',
         'returned_at' => 'date',
+        'last_location_at' => 'datetime',
     ];
 
     public function asset()
@@ -87,5 +89,25 @@ class Loan extends Model
         }
 
         return (int) today()->diffInDays($this->due_at, false);
+    }
+
+    public function originLocation()
+    {
+        return $this->belongsTo(Location::class, 'origin_location_id');
+    }
+    
+    public function lastLocation()
+    {
+        return $this->belongsTo(Location::class, 'last_location_id');
+    }
+
+    // Contoh: "Gedung Utama › Ruang Staf (Meja Pak Budi)"
+    public function getLastLocationLabelAttribute(): ?string
+    {
+        if (! $this->last_location_id) {
+            return null;
+        }
+
+        return $this->lastLocation->full_name . ($this->last_location_note ? " ({$this->last_location_note})" : '');
     }
 }

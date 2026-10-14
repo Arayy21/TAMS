@@ -64,7 +64,34 @@
                 </div>
             @endif
 
-            <div class="col-12">
+                <div class="col-12">
+                    <label class="form-label">Lokasi Awal</label>
+                    <input type="text" class="form-control" disabled
+                        value="{{ $loan->originLocation?->full_name ?? 'Belum dicatat' }}">
+                    <div class="form-text">Lokasi aset saat dipinjam. Tidak dapat diubah.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="last_location_id" class="form-label">Lokasi Terakhir @unless ($loan->returned_at)<span class="text-danger">*</span>@endunless</label>
+                    <select name="last_location_id" id="last_location_id" class="form-select @error('last_location_id') is-invalid @enderror">
+                        <option value="">Pilih lokasi</option>
+                        @foreach ($locations as $l)
+                            <option value="{{ $l->id }}" @selected(old('last_location_id', $loan->last_location_id) == $l->id)>{{ $l->full_name }}</option>
+                        @endforeach
+                    </select>
+                    @error('last_location_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    @if ($loan->last_location_at)
+                        <div class="form-text">Terakhir diperbarui {{ $loan->last_location_at->format('d M Y H:i') }}.</div>
+                    @else
+                        <div class="form-text text-warning-emphasis">Lokasi belum pernah dicatat.</div>
+                    @endif
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Detail Lokasi <span class="text-muted">(opsional)</span></label>
+                    <input type="text" name="last_location_note" value="{{ old('last_location_note', $loan->last_location_note) }}" maxlength="100"
+                        placeholder="Contoh: Meja Pak Budi, lantai 2"
+                        class="form-control @error('last_location_note') is-invalid @enderror">
+                    @error('last_location_note') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
                 <label class="form-label">Catatan <span class="text-muted">(opsional)</span></label>
                 <input type="text" name="notes" value="{{ old('notes', $loan->notes) }}"
                        class="form-control @error('notes') is-invalid @enderror">
