@@ -14,15 +14,25 @@ class LoanController extends Controller
 {
     public function index(Request $request)
     {
+        $scope = $this->locationScope($request->location_id);
+
         $loans = Loan::with(['asset', 'originLocation.parent', 'lastLocation.parent'])
             ->when($request->q, function ($q, $v) {
-                $q->where(function ($w) use ($v) {
-                    $w->where('borrower_name', 'like', "%{$v}%")
+                $like = "%{$v}%";
+
+                $q->where(function ($w) use ($like) {
+                    $w->where('borrower_name', 'like', $like)
+                      ->orWhere('last_location_note', 'like', $like)
                       ->orWhereHas('asset', fn ($a) => $a
-                          ->where('name', 'like', "%{$v}%")
-                          ->orWhere('asset_code', 'like', "%{$v}%"));
+                          ->where('name', 'like', $like)
+                          ->orWhere('asset_code', 'like', $like))
+                      ->orWhereHas('lastLocation', fn ($l) => $l->where('name', 'like', $like))
+                      ->orWhereHas('lastLocation.parent', fn ($p) => $p->where('name', 'like', $like))
+                      ->orWhereHas('originLocation', fn ($l) => $l->where('name', 'like', $like))
+                      ->orWhereHas('originLocation.parent', fn ($p) => $p->where('name', 'like', $like));
                 });
             })
+            ->when($scope, fn ($q, $ids) => $q->whereIn('last_location_id', $ids))
             ->when($request->status, function ($q, $v) {
                 match ($v) {
                     'dipinjam'     => $q->active(),
@@ -43,7 +53,11 @@ class LoanController extends Controller
             'terlambat' => Loan::active()->whereNotNull('due_at')->whereDate('due_at', '<', today())->count(),
         ];
 
-        return view('loans.index', compact('loans', 'summary'));
+        return view('loans.index', [
+            'loans'     => $loans,
+            'summary'   => $summary,
+            'locations' => $this->locationOptions(),
+        ]);
     }
 
     public function create(Request $request)
@@ -264,5 +278,18 @@ class LoanController extends Controller
         return Location::with('parent')->get()
             ->sortBy('full_name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
+    }
+
+    // Lokasi yang dipilih beserta ruangan di dalamnya (bila yang dipilih adalah gedung)
+    private function locationScope($id): ?array
+    {
+        if (! $id || ! Location::whereKey($id)->exists()) {
+            return null;
+        }
+
+        return Location::where('id', $id)->orWhere('parent_id', $id)
+            ->pluck('id')
+            ->map(fn ($v) => (int) $v)
+            ->all();
     }
 }

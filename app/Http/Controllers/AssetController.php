@@ -8,7 +8,7 @@ use App\Models\Category;
 use App\Models\Location;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException; 
+use Illuminate\Validation\ValidationException;
 
 class AssetController extends Controller
 {
@@ -46,6 +46,8 @@ class AssetController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+
+        // Aset baru minimal 1 unit (nol hanya terjadi lewat Barang Keluar)
         if ($data['quantity'] < 1) {
             throw ValidationException::withMessages(['quantity' => 'Jumlah unit minimal 1 untuk aset baru.']);
         }
@@ -65,14 +67,16 @@ class AssetController extends Controller
             ->with('success', "Aset {$asset->asset_code} berhasil ditambahkan.");
     }
 
-   public function show(Asset $asset)
+    public function show(Asset $asset)
     {
         $asset->load(['category', 'location.parent']);
         $histories = $asset->histories()->with('user')->limit(10)->get();
+
+        // Peminjaman yang masih berjalan (beserta lokasi awal dan lokasi terakhir)
         $activeLoans = $asset->loans()->active()
-                ->with(['originLocation.parent', 'lastLocation.parent'])
-                ->orderBy('due_at')
-                ->get();
+            ->with(['originLocation.parent', 'lastLocation.parent'])
+            ->orderBy('due_at')
+            ->get();
 
         // Aset lain di ruangan yang sama
         $roomTotal = Asset::where('location_id', $asset->location_id)->count();
@@ -96,7 +100,7 @@ class AssetController extends Controller
         }
 
         return view('assets.show', compact(
-            'asset', 'histories', 'movements', 'movementTotals', 'roomTotal', 'roommates'
+            'asset', 'histories', 'activeLoans', 'movements', 'movementTotals', 'roomTotal', 'roommates'
         ));
     }
 
@@ -111,11 +115,13 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset)
     {
+        // Jumlah tidak boleh kurang dari unit yang sedang dipinjam
         if ((int) $request->quantity < $asset->borrowed) {
             return back()->withInput()->withErrors([
                 'quantity' => "Jumlah tidak boleh kurang dari unit yang sedang dipinjam ({$asset->borrowed}).",
             ]);
         }
+
         $asset->fill($this->validated($request));
         $dirty = $asset->getDirty();
         $old   = $asset->getOriginal();
@@ -166,12 +172,12 @@ class AssetController extends Controller
             'name'            => 'required|string|max:150',
             'category_id'     => 'required|exists:categories,id',
             'location_id'     => 'required|exists:locations,id',
+            'quantity'        => 'required|integer|min:0|max:100000',
             'asset_condition' => 'required|in:baik,rusak,perbaikan',
             'status'          => 'required|in:aktif,nonaktif',
             'description'     => 'nullable|string|max:1000',
             'serial_number'   => 'nullable|string|max:100',
             'purchase_date'   => 'nullable|date',
-            'quantity'        => 'required|integer|min:0|max:100000',
         ]);
     }
 
@@ -181,7 +187,7 @@ class AssetController extends Controller
         $general = [];
 
         foreach ($dirty as $field => $new) {
-    // Perubahan jumlah dicatat dengan nilai lama dan baru
+            // Perubahan jumlah dicatat dengan nilai lama dan baru
             if ($field === 'quantity') {
                 $this->log($asset, 'update', 'quantity', (string) ($old['quantity'] ?? ''), (string) $new, 'Jumlah unit diubah');
                 continue;

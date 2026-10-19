@@ -32,11 +32,11 @@
 
 <div class="card-tams p-4">
     <form method="GET" action="{{ route('loans.index') }}" class="row g-2 mb-3">
-        <div class="col-12 col-md-5">
+        <div class="col-12 col-lg-5">
             <input type="text" name="q" value="{{ request('q') }}" class="form-control"
-                   placeholder="Cari nama peminjam, kode, atau nama aset...">
+                   placeholder="Cari peminjam, aset, atau lokasi...">
         </div>
-        <div class="col-12 col-md-3">
+        <div class="col-6 col-lg-3">
             <select name="status" class="form-select">
                 <option value="">Semua status</option>
                 @foreach (['dipinjam' => 'Dipinjam', 'segera' => 'Segera jatuh tempo', 'terlambat' => 'Terlambat', 'dikembalikan' => 'Dikembalikan'] as $k => $v)
@@ -44,9 +44,20 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-12 col-md-4 d-flex gap-2">
+        <div class="col-6 col-lg-4">
+            <select name="location_id" class="form-select" aria-label="Filter lokasi terakhir">
+                <option value="">Semua lokasi terakhir</option>
+                @foreach ($locations as $l)
+                    <option value="{{ $l->id }}" @selected(request('location_id') == $l->id)>{{ $l->full_name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
             <button class="btn btn-outline-primary"><i class="bi bi-search"></i> Cari</button>
             <a href="{{ route('loans.index') }}" class="btn btn-outline-secondary">Reset</a>
+            <span class="form-text d-none d-md-inline ms-2 mt-0">
+                Pencarian juga mencocokkan lokasi awal, lokasi terakhir, dan detail lokasi.
+            </span>
             <a href="{{ route('loans.create') }}" class="btn btn-primary ms-auto"><i class="bi bi-plus-lg"></i> Pinjam</a>
         </div>
     </form>
@@ -70,17 +81,22 @@
             <tbody>
                 @forelse ($loans as $l)
                     <tr class="{{ $l->is_overdue ? 'table-danger' : '' }}">
+
+                        {{-- 1. Peminjam --}}
                         <td class="cell-title" data-label="Peminjam">
                             <div class="fw-semibold">{{ $l->borrower_name }}</div>
                             <small class="text-muted">{{ $l->borrower_contact ?? '-' }}</small>
                         </td>
+
+                        {{-- 2. Aset --}}
                         <td data-label="Aset">
                             <div class="cv">
                                 <a href="{{ route('assets.show', $l->asset_id) }}" class="fw-semibold text-decoration-none">{{ $l->asset->asset_code }}</a>
                                 <div class="small text-muted">{{ $l->asset->name }}</div>
                             </div>
                         </td>
-                        {{-- Lokasi awal --}}
+
+                        {{-- 3. Lokasi awal --}}
                         <td data-label="Lokasi awal">
                             <div class="cv">
                                 @if ($l->origin_location_id)
@@ -90,6 +106,8 @@
                                 @endif
                             </div>
                         </td>
+
+                        {{-- 4. Lokasi terakhir --}}
                         <td data-label="Lokasi terakhir">
                             <div class="cv">
                                 @if ($l->last_location_id)
@@ -102,12 +120,20 @@
                                 @endif
                             </div>
                         </td>
+
+                        {{-- 5. Dipinjam --}}
                         <td class="cell-num text-center fw-semibold" data-label="Dipinjam">{{ $l->quantity }}</td>
+
+                        {{-- 6. Sisa tersedia --}}
                         <td class="cell-num text-center" data-label="Tersedia">
                             {{ $l->asset->available }}
                             <span class="text-muted small">dari {{ $l->asset->quantity }}</span>
                         </td>
+
+                        {{-- 7. Tanggal pinjam --}}
                         <td data-label="Tgl pinjam">{{ $l->loaned_at->format('d M Y') }}</td>
+
+                        {{-- 8. Batas kembali --}}
                         <td data-label="Batas kembali">
                             <div class="cv">
                                 {{ $l->due_at?->format('d M Y') ?? '-' }}
@@ -124,9 +150,13 @@
                                 @endif
                             </div>
                         </td>
+
+                        {{-- 9. Status --}}
                         <td class="cell-status" data-label="Status">
                             <span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span>
                         </td>
+
+                        {{-- 10. Aksi (admin) --}}
                         @if ($isAdmin)
                             <td class="cell-actions text-end text-nowrap">
                                 <a href="{{ route('loans.edit', $l) }}" class="btn btn-sm btn-outline-primary">
@@ -148,7 +178,7 @@
                     <tr>
                         <td colspan="{{ $isAdmin ? 10 : 9 }}" class="cell-empty text-center text-muted py-5">
                             <i class="bi bi-people fs-1"></i>
-                            <p class="mb-0">Belum ada data peminjaman.</p>
+                            <p class="mb-0">{{ request()->hasAny(['q', 'status', 'location_id']) ? 'Tidak ada peminjaman yang cocok dengan pencarian.' : 'Belum ada data peminjaman.' }}</p>
                         </td>
                     </tr>
                 @endforelse

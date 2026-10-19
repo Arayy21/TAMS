@@ -87,7 +87,7 @@
     function h(tag, cls, text) {
         var e = document.createElement(tag);
         if (cls) e.className = cls;
-        if (text !== undefined) e.textContent = text;
+        if (text !== undefined && text !== null) e.textContent = text;
         return e;
     }
     function focusInput() { if (! isTouch) input.focus(); }
@@ -105,6 +105,43 @@
         } catch (e) {}
     }
 
+    // Bagian "sedang dipinjam": siapa, berapa unit, dan dari mana ke mana
+    function loanBlock(a) {
+        var wrap = h('div', 'mt-3 pt-3');
+        wrap.style.borderTop = '1px solid var(--border)';
+
+        if (! a.loans || ! a.loans.length) {
+            var t = h('div', 'small');
+            t.append(h('span', 'text-muted', 'Tidak sedang dipinjam. Berada di lokasi asal: '), h('strong', '', a.location));
+            wrap.append(t);
+            return wrap;
+        }
+
+        var units = a.loans.reduce(function (s, l) { return s + l.quantity; }, 0);
+        wrap.append(h('div', 'fw-semibold mb-2', 'Sedang dipinjam (' + a.loans.length + ' peminjam, ' + units + ' unit)'));
+
+        a.loans.forEach(function (l) {
+            var row = h('div', 'p-2 mb-2');
+            row.style.background = 'var(--surface-2)';
+            row.style.borderRadius = '8px';
+
+            var top = h('div', 'd-flex justify-content-between gap-2');
+            top.append(h('strong', '', l.borrower + ' (' + l.quantity + ' unit)'),
+                       h('span', 'small ' + (l.overdue ? 'text-danger fw-semibold' : 'text-muted'), l.due_text));
+
+            var loc = h('div', 'small mt-1');
+            loc.append(h('span', 'text-muted', 'Dari: '), h('span', '', l.origin || '-'),
+                       h('span', 'text-muted', ' \u2192 sekarang di: '), h('strong', '', l.last || 'Belum dicatat'));
+
+            row.append(top, loc);
+            if (l.note) row.append(h('div', 'small text-muted', 'Detail lokasi: ' + l.note));
+            if (l.contact) row.append(h('div', 'small text-muted', 'Kontak: ' + l.contact));
+            wrap.append(row);
+        });
+
+        return wrap;
+    }
+
     function renderFound(a) {
         var box = $('result'); box.innerHTML = '';
         var card = h('div', 'card-tams result-card p-4');
@@ -112,7 +149,7 @@
         var top = h('div', 'd-flex justify-content-between align-items-start gap-2 mb-2');
         var left = h('div');
         var code = h('div', 'fw-bold fs-5', a.code); code.style.color = 'var(--primary)';
-        left.append(code, h('div', 'fw-semibold', a.name), h('div', 'small text-muted', a.category + ' \u00B7 ' + a.location));
+        left.append(code, h('div', 'fw-semibold', a.name), h('div', 'small text-muted', a.category + ' \u00B7 Lokasi asal: ' + a.location));
         var badges = h('div', 'd-flex gap-1 flex-wrap justify-content-end');
         badges.append(
             h('span', 'badge rounded-pill text-bg-' + (CONDITION[a.condition] || 'secondary'), a.condition.charAt(0).toUpperCase() + a.condition.slice(1)),
@@ -127,13 +164,14 @@
             col.append(b); stats.append(col);
         });
 
-        var actions = h('div', 'd-flex gap-2');
+        var actions = h('div', 'd-flex gap-2 mt-3');
         var open = h('a', 'btn btn-primary', 'Buka Detail Aset'); open.href = a.url;
         var again = h('button', 'btn btn-outline-secondary', 'Scan Lagi'); again.type = 'button';
         again.addEventListener('click', function () { box.innerHTML = ''; input.value = ''; focusInput(); });
         actions.append(open, again);
 
-        card.append(top, stats, actions); box.append(card);
+        card.append(top, stats, loanBlock(a), actions);
+        box.append(card);
     }
 
     function renderFail(code, msg) {
@@ -149,8 +187,7 @@
         history.forEach(function (r) {
             var row = h('div', 'hist-row d-flex gap-3 align-items-center mb-2');
             row.append(h('span', 'text-muted', r.time));
-            var c = h('strong', r.ok ? '' : 'text-danger', r.code);
-            row.append(c);
+            row.append(h('strong', r.ok ? '' : 'text-danger', r.code));
             row.append(h('span', 'flex-grow-1 text-truncate', r.text));
             row.append(h('span', 'badge text-bg-light border', r.src));
             if (r.url) { var a = h('a', '', 'Buka'); a.href = r.url; row.append(a); }
@@ -172,7 +209,8 @@
 
             if (data.found) {
                 renderFound(data.asset); beep(true);
-                addHistory({ time: time, code: data.asset.code, text: data.asset.name, ok: true, src: src, url: data.asset.url });
+                var borrowed = data.asset.loans && data.asset.loans.length;
+                addHistory({ time: time, code: data.asset.code, text: data.asset.name + (borrowed ? ' (sedang dipinjam)' : ''), ok: true, src: src, url: data.asset.url });
                 if ($('autoOpen').checked) setTimeout(function () { window.location.href = data.asset.url; }, 400);
             } else {
                 renderFail(code, data.message || 'Tidak ditemukan.'); beep(false);
