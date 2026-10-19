@@ -80,6 +80,10 @@
             </thead>
             <tbody>
                 @forelse ($loans as $l)
+                    @php
+                        $pb = $l->photos->where('stage', 'sebelum')->values();
+                        $pa = $l->photos->where('stage', 'sesudah')->values();
+                    @endphp
                     <tr class="{{ $l->is_overdue ? 'table-danger' : '' }}">
 
                         {{-- 1. Peminjam --}}
@@ -151,9 +155,22 @@
                             </div>
                         </td>
 
-                        {{-- 9. Status --}}
+                        {{-- 9. Status dan foto bukti --}}
                         <td class="cell-status" data-label="Status">
-                            <span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span>
+                            <div class="cv">
+                                <span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span>
+                                @if ($l->photos->isNotEmpty())
+                                    <button type="button" class="btn btn-link btn-sm p-0 d-block mt-1 text-decoration-none btn-photos"
+                                            data-bs-toggle="modal" data-bs-target="#modalLoanPhotos"
+                                            data-title="{{ $l->borrower_name }} &middot; {{ $l->asset->asset_code }}"
+                                            data-before="{{ $pb->map(fn ($p) => $p->url)->toJson() }}"
+                                            data-after="{{ $pa->map(fn ($p) => $p->url)->toJson() }}">
+                                        <i class="bi bi-images"></i> {{ $pb->count() }} sebelum &middot; {{ $pa->count() }} sesudah
+                                    </button>
+                                @else
+                                    <span class="d-block small text-muted mt-1">Tanpa foto</span>
+                                @endif
+                            </div>
                         </td>
 
                         {{-- 10. Aksi (admin) --}}
@@ -191,13 +208,31 @@
         {{ $loans->links() }}
     </div>
 </div>
-@endsection
 
-@if (auth()->user()->isAdmin())
-@push('scripts')
+{{-- Galeri foto bukti --}}
+<div class="modal fade" id="modalLoanPhotos" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lpTitle">Foto Bukti</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <div class="fw-semibold small mb-2">Sebelum dipinjam</div>
+                <div class="d-flex flex-wrap gap-2 mb-4" id="lpBefore"></div>
+                <div class="fw-semibold small mb-2">Sesudah dikembalikan</div>
+                <div class="d-flex flex-wrap gap-2" id="lpAfter"></div>
+                <div class="small text-muted mt-3">Ketuk foto untuk membukanya dalam ukuran penuh.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Konfirmasi pengembalian (admin) --}}
+@if ($isAdmin)
 <div class="modal fade" id="modalReturn" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form method="POST" id="formReturn" class="modal-content">
+        <form method="POST" id="formReturn" class="modal-content" enctype="multipart/form-data">
             @csrf
             <div class="modal-header">
                 <h5 class="modal-title">Konfirmasi Pengembalian</h5>
@@ -205,9 +240,14 @@
             </div>
             <div class="modal-body">
                 <p class="mb-3" id="returnText"></p>
+
                 <label for="returned_at" class="form-label">Tanggal dikembalikan</label>
-                <input type="date" name="returned_at" id="returned_at" class="form-control"
+                <input type="date" name="returned_at" id="returned_at" class="form-control mb-3"
                        value="{{ now()->format('Y-m-d') }}" max="{{ now()->format('Y-m-d') }}" required>
+
+                <label class="form-label">Foto Kondisi Barang Sesudah Dikembalikan <span class="text-muted">(opsional, maks. 3)</span></label>
+                @include('loans._photo_picker', ['id' => 'photosAfter', 'name' => 'photos_after', 'max' => 3, 'showErrors' => false])
+                <div class="form-text">Disarankan melampirkan foto sebagai bukti kondisi barang saat kembali.</div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
@@ -216,7 +256,43 @@
         </form>
     </div>
 </div>
+@endif
+@endsection
 
+@push('scripts')
+<script>
+(function () {
+    // Galeri foto bukti
+    var modal = document.getElementById('modalLoanPhotos');
+
+    function fill(id, raw) {
+        var box = document.getElementById(id), list = [];
+        box.innerHTML = '';
+        try { list = JSON.parse(raw || '[]'); } catch (e) {}
+
+        if (! list.length) {
+            var s = document.createElement('span'); s.className = 'text-muted small'; s.textContent = 'Tidak ada foto.';
+            box.append(s);
+            return;
+        }
+        list.forEach(function (u) {
+            var a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener';
+            var im = document.createElement('img'); im.src = u; im.loading = 'lazy'; im.alt = 'Foto bukti';
+            im.style.cssText = 'width:160px;height:120px;object-fit:cover;border-radius:10px;border:1px solid #EAEAEA';
+            a.append(im); box.append(a);
+        });
+    }
+
+    modal.addEventListener('show.bs.modal', function (e) {
+        var t = e.relatedTarget;
+        document.getElementById('lpTitle').textContent = 'Foto Bukti: ' + t.dataset.title;
+        fill('lpBefore', t.dataset.before);
+        fill('lpAfter', t.dataset.after);
+    });
+})();
+</script>
+
+@if (auth()->user()->isAdmin())
 <script>
     document.querySelectorAll('.btn-return').forEach(b => b.addEventListener('click', () => {
         document.getElementById('formReturn').action = "{{ url('peminjam') }}/" + b.dataset.id + "/kembali";
@@ -224,5 +300,5 @@
         document.getElementById('returned_at').min = b.dataset.min;
     }));
 </script>
-@endpush
 @endif
+@endpush

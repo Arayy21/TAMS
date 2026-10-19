@@ -14,40 +14,23 @@
                 <small>Aset harus berstatus aktif, berkondisi baik, dan masih memiliki sisa unit.</small></p>
         </div>
     @else
-    <form method="POST" action="{{ route('loans.store') }}">
+    <form method="POST" action="{{ route('loans.store') }}" enctype="multipart/form-data">
         @csrf
         <div class="row g-3">
 
             <div class="col-12">
-                <div class="col-md-6">
-                    <label for="last_location_id" class="form-label">Lokasi Pemakaian <span class="text-danger">*</span></label>
-                    <select name="last_location_id" id="last_location_id" class="form-select @error('last_location_id') is-invalid @enderror">
-                        <option value="">Pilih lokasi</option>
-                        @foreach ($locations as $l)
-                            <option value="{{ $l->id }}" @selected(old('last_location_id') == $l->id)>{{ $l->full_name }}</option>
-                        @endforeach
-                    </select>
-                    @error('last_location_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    <div class="form-text">Tempat barang dipakai atau disimpan selama dipinjam.</div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Detail Lokasi <span class="text-muted">(opsional)</span></label>
-                    <input type="text" name="last_location_note" value="{{ old('last_location_note') }}" maxlength="100"
-                        placeholder="Contoh: Meja Pak Budi, lantai 2"
-                        class="form-control @error('last_location_note') is-invalid @enderror">
-                    @error('last_location_note') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
                 <label class="form-label">Scan Barcode Aset <span class="text-muted">(opsional)</span></label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
                     <input type="text" id="scanKode" class="form-control" placeholder="Scan atau ketik kode, lalu Enter"
-                        autocomplete="off" autocapitalize="characters" maxlength="30">
+                           autocomplete="off" autocapitalize="characters" maxlength="30">
                     <button type="button" class="btn btn-outline-secondary" id="btnScanCam">
                         <i class="bi bi-camera-video"></i> Kamera
                     </button>
                 </div>
                 <div id="scanInfo" class="form-text"></div>
             </div>
+
             <div class="col-12">
                 <label for="asset_id" class="form-label">Aset <span class="text-danger">*</span></label>
                 <select name="asset_id" id="asset_id" class="form-select @error('asset_id') is-invalid @enderror">
@@ -65,8 +48,8 @@
 
             <div class="col-md-6">
                 <label class="form-label">Nama Peminjam <span class="text-danger">*</span></label>
-                <input type="text" name="borrower_name" value="{{ old('borrower_name') }}"
-                       class="form-control @error('borrower_name') is-invalid @enderror" id="borrower_name">
+                <input type="text" name="borrower_name" id="borrower_name" value="{{ old('borrower_name') }}"
+                       class="form-control @error('borrower_name') is-invalid @enderror">
                 @error('borrower_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 <div id="warnPeminjam" class="alert alert-warning py-2 small mt-2 mb-0 d-none" role="alert"></div>
             </div>
@@ -96,9 +79,35 @@
                 @error('due_at') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
+            <div class="col-md-6">
+                <label for="last_location_id" class="form-label">Lokasi Pemakaian <span class="text-danger">*</span></label>
+                <select name="last_location_id" id="last_location_id" class="form-select @error('last_location_id') is-invalid @enderror">
+                    <option value="">Pilih lokasi</option>
+                    @foreach ($locations as $l)
+                        <option value="{{ $l->id }}" @selected(old('last_location_id') == $l->id)>{{ $l->full_name }}</option>
+                    @endforeach
+                </select>
+                @error('last_location_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <div class="form-text">Tempat barang dipakai atau disimpan selama dipinjam.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Detail Lokasi <span class="text-muted">(opsional)</span></label>
+                <input type="text" name="last_location_note" value="{{ old('last_location_note') }}" maxlength="100"
+                       placeholder="Contoh: Meja Pak Budi, lantai 2"
+                       class="form-control @error('last_location_note') is-invalid @enderror">
+                @error('last_location_note') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Foto Kondisi Barang Sebelum Dipinjam <span class="text-muted">(opsional, maks. 3)</span></label>
+                @include('loans._photo_picker', ['id' => 'photosBefore', 'name' => 'photos_before', 'max' => 3])
+                <div class="form-text">Disarankan melampirkan foto sebagai bukti kondisi barang saat keluar.</div>
+            </div>
+
             <div class="col-12">
                 <label class="form-label">Catatan <span class="text-muted">(opsional)</span></label>
-                <input type="text" name="notes" value="{{ old('notes') }}" class="form-control @error('notes') is-invalid @enderror">
+                <input type="text" name="notes" value="{{ old('notes') }}"
+                       class="form-control @error('notes') is-invalid @enderror">
                 @error('notes') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
         </div>
@@ -110,57 +119,57 @@
     </form>
     @endif
 </div>
-@include('scan._camera')
+
+@if ($assets->isNotEmpty())
+    @include('scan._camera')
+@endif
 @endsection
 
 @push('scripts')
 <script>
-    const sel = document.getElementById('asset_id');
-    const qty = document.getElementById('quantity');
-    const info = document.getElementById('infoStok');
+(function () {
+    var sel = document.getElementById('asset_id');
+    if (! sel) return;
 
+    var qty = document.getElementById('quantity'), info = document.getElementById('infoStok');
+    var URL_FIND = @json(route('scan.find'));
+
+    // ----- Informasi stok -----
     function updateStok() {
-        if (!sel) return;
-        const opt = sel.selectedOptions[0];
-        if (!opt || !opt.dataset.available) {
+        var opt = sel.selectedOptions[0];
+        if (! opt || ! opt.dataset.available) {
             info.textContent = 'Pilih aset untuk melihat sisa tersedia.';
             qty.removeAttribute('max');
             return;
         }
-        const av = parseInt(opt.dataset.available);
+        var av = parseInt(opt.dataset.available, 10);
         info.textContent = 'Tersedia ' + av + ' dari ' + opt.dataset.total + ' unit.';
         qty.max = av;
-        if (parseInt(qty.value) > av) qty.value = av;
+        if (parseInt(qty.value, 10) > av) qty.value = av;
     }
-    if (sel) { sel.addEventListener('change', updateStok); updateStok(); }
+    sel.addEventListener('change', updateStok);
+    updateStok();
 
-    const overdueBorrowers = @json($overdueBorrowers);
-        const nameInput = document.getElementById('borrower_name');
-        const warnBox   = document.getElementById('warnPeminjam');
+    // ----- Peringatan peminjam yang masih terlambat -----
+    var overdue = @json($overdueBorrowers);
+    var nameInput = document.getElementById('borrower_name'), warn = document.getElementById('warnPeminjam');
 
-        function cekPeminjam() {
-            const data = overdueBorrowers[nameInput.value.trim().toLowerCase()];
-            if (data) {
-                warnBox.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-1"></i> <strong>' +
-                    nameInput.value.trim() + '</strong> masih memiliki ' + data.total +
-                    ' peminjaman terlambat (' + data.units + ' unit) yang belum dikembalikan.';
-                warnBox.classList.remove('d-none');
-            } else {
-                warnBox.classList.add('d-none');
-            }
+    function cekPeminjam() {
+        var d = overdue[nameInput.value.trim().toLowerCase()];
+        if (d) {
+            warn.textContent = nameInput.value.trim() + ' masih memiliki ' + d.total + ' peminjaman terlambat (' + d.units + ' unit) yang belum dikembalikan.';
+            warn.classList.remove('d-none');
+        } else {
+            warn.classList.add('d-none');
         }
-        if (nameInput) { nameInput.addEventListener('input', cekPeminjam); cekPeminjam(); }
-    </script>
-@endpush
+    }
+    nameInput.addEventListener('input', cekPeminjam);
+    cekPeminjam();
 
-@push('scripts')
-<script>
-(function () {
-    var sel = document.getElementById('asset_id'), inp = document.getElementById('scanKode'), info = document.getElementById('scanInfo');
-    if (! sel || ! inp) return;
-    var URL_FIND = @json(route('scan.find'));
+    // ----- Scan barcode -----
+    var inp = document.getElementById('scanKode'), scanInfo = document.getElementById('scanInfo');
 
-    function say(text, cls) { info.className = 'form-text ' + (cls || ''); info.textContent = text; }
+    function say(text, cls) { scanInfo.className = 'form-text ' + (cls || ''); scanInfo.textContent = text; }
 
     async function pick(raw) {
         var code = (raw || '').trim().toUpperCase();
@@ -183,8 +192,7 @@
             sel.dispatchEvent(new Event('change'));
             say('Terpilih: ' + a.code + ' - ' + a.name + ' (tersedia ' + a.available + ').', 'text-success');
             inp.value = '';
-            var next = document.getElementById('borrower_name');
-            if (next) next.focus();
+            nameInput.focus();
         } catch (e) {
             say('Gagal mencari. Muat ulang halaman, mungkin sesi login sudah berakhir.', 'text-danger');
         }

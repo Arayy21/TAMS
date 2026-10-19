@@ -4,19 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\Loan;
+use App\Models\LoanPhoto;
 use App\Models\Location;
+use App\Support\ImageUpload;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class LoanController extends Controller
 {
+    private const MAX_PHOTOS = 3;
+
     public function index(Request $request)
     {
         $scope = $this->locationScope($request->location_id);
 
-        $loans = Loan::with(['asset', 'originLocation.parent', 'lastLocation.parent'])
+        $loans = Loan::with(['asset', 'originLocation.parent', 'lastLocation.parent', 'photos'])
             ->when($request->q, function ($q, $v) {
                 $like = "%{$v}%";
 
@@ -81,7 +87,7 @@ class LoanController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'asset_id'           => ['required', Rule::exists('assets', 'id')->whereNull('deleted_at')],
             'borrower_name'      => 'required|string|max:100',
             'borrower_contact'   => 'nullable|string|max:50',
@@ -91,7 +97,7 @@ class LoanController extends Controller
             'last_location_id'   => 'required|exists:locations,id',
             'last_location_note' => 'nullable|string|max:100',
             'notes'              => 'nullable|string|max:255',
-        ], [
+        ], $this->photoRules('photos_before')), array_merge([
             'asset_id.required'         => 'Pilih aset yang dipinjam.',
             'borrower_name.required'    => 'Nama peminjam wajib diisi.',
             'quantity.required'         => 'Jumlah wajib diisi.',
@@ -100,34 +106,63 @@ class LoanController extends Controller
             'due_at.after_or_equal'     => 'Batas kembali tidak boleh sebelum tanggal pinjam.',
             'last_location_id.required' => 'Pilih lokasi pemakaian barang.',
             'last_location_id.exists'   => 'Lokasi tidak ditemukan.',
-        ]);
+        ], $this->photoMessages('photos_before')));
 
-        $loan = DB::transaction(function () use ($data) {
-            // Kunci baris aset agar dua peminjaman bersamaan tidak melewati stok
-            $asset = Asset::whereKey($data['asset_id'])->lockForUpdate()->firstOrFail();
+        $files = array_filter((array) $request->file('photos_before', []));
+        $paths = [];
 
-            if ($asset->status !== 'aktif' || $asset->asset_condition !== 'baik') {
-                throw ValidationException::withMessages([
-                    'asset_id' => 'Aset ini tidak dapat dipinjam (harus berstatus aktif dan kondisi baik).',
-                ]);
+        try {
+            foreach ($files as $file) {
+                $paths[] = ImageUpload::store($file, $this->photoDir(), 'photos_before');
             }
 
-            $available = $asset->available;
-            if ($data['quantity'] > $available) {
-                throw ValidationException::withMessages([
-                    'quantity' => "Jumlah melebihi sisa tersedia ({$available} unit).",
-                ]);
-            }
+            $loan = DB::transaction(function () use ($data, $paths) {
+                // Kunci baris aset agar dua peminjaman bersamaan tidak melewati stok
+                $asset = Asset::whereKey($data['asset_id'])->lockForUpdate()->firstOrFail();
 
-            return Loan::create($data + [
-                'created_by'         => auth()->id(),
-                'last_location_at'   => now(),
-                'origin_location_id' => $asset->location_id,
-            ]);
-        });
+                if ($asset->status !== 'aktif' || $asset->asset_condition !== 'baik') {
+                    throw ValidationException::withMessages([
+                        'asset_id' => 'Aset ini tidak dapat dipinjam (harus berstatus aktif dan kondisi baik).',
+                    ]);
+                }
+
+                $available = $asset->available;
+                if ($data['quantity'] > $available) {
+                    throw ValidationException::withMessages([
+                        'quantity' => "Jumlah melebihi sisa tersedia ({$available} unit).",
+                    ]);
+                }
+
+                $loan = Loan::create(Arr::except($data, ['photos_before']) + [
+                    'created_by'         => auth()->id(),
+                    'last_location_at'   => now(),
+                    'origin_location_id' => $asset->location_id,
+                ]);
+
+                foreach ($paths as $path) {
+                    LoanPhoto::create([
+                        'loan_id'    => $loan->id,
+                        'stage'      => 'sebelum',
+                        'path'       => $path,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+
+                return $loan;
+            });
+        } catch (\Throwable $e) {
+            $this->discardFiles($paths);
+            throw $e;
+        }
 
         $redirect = redirect()->route('loans.index')
-            ->with('success', "Peminjaman oleh {$loan->borrower_name} berhasil dicatat.");
+            ->with('success', "Peminjaman oleh {$loan->borrower_name} berhasil dicatat" . (count($paths) ? ' dengan ' . count($paths) . ' foto kondisi barang.' : '.'));
+
+        $warnings = [];
+
+        if (! count($paths)) {
+            $warnings[] = 'Peminjaman dicatat tanpa foto kondisi barang sebelum dipinjam. Foto bisa ditambahkan lewat Edit Peminjaman.';
+        }
 
         $lateCount = Loan::overdue()
             ->where('borrower_name', $loan->borrower_name)
@@ -135,7 +170,11 @@ class LoanController extends Controller
             ->count();
 
         if ($lateCount > 0) {
-            $redirect->with('warning', "Perhatian: {$loan->borrower_name} masih memiliki {$lateCount} peminjaman yang terlambat dikembalikan.");
+            $warnings[] = "Perhatian: {$loan->borrower_name} masih memiliki {$lateCount} peminjaman yang terlambat dikembalikan.";
+        }
+
+        if ($warnings) {
+            $redirect->with('warning', implode(' ', $warnings));
         }
 
         return $redirect;
@@ -143,38 +182,75 @@ class LoanController extends Controller
 
     public function returnLoan(Request $request, Loan $loan)
     {
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'returned_at' => 'required|date|before_or_equal:today|after_or_equal:' . $loan->loaned_at->format('Y-m-d'),
-        ], [
+        ], $this->photoRules('photos_after')), array_merge([
             'returned_at.required'        => 'Tanggal pengembalian wajib diisi.',
             'returned_at.before_or_equal' => 'Tanggal pengembalian tidak boleh melebihi hari ini.',
             'returned_at.after_or_equal'  => 'Tanggal pengembalian tidak boleh sebelum tanggal pinjam.',
-        ]);
+        ], $this->photoMessages('photos_after')));
 
+        $files    = array_filter((array) $request->file('photos_after', []));
+        $existing = $loan->photos()->where('stage', 'sesudah')->count();
+
+        if ($existing + count($files) > self::MAX_PHOTOS) {
+            throw ValidationException::withMessages([
+                'photos_after' => 'Maksimal ' . self::MAX_PHOTOS . ' foto sesudah dikembalikan.',
+            ]);
+        }
+
+        $paths   = [];
         $already = false;
 
-        DB::transaction(function () use ($loan, $data, &$already) {
-            // Kunci baris agar tidak dikembalikan dua kali bersamaan
-            $fresh = Loan::whereKey($loan->id)->lockForUpdate()->first();
-
-            if ($fresh->returned_at !== null) {
-                $already = true;
-                return;
+        try {
+            foreach ($files as $file) {
+                $paths[] = ImageUpload::store($file, $this->photoDir(), 'photos_after');
             }
 
-            $fresh->update(['returned_at' => $data['returned_at']]);
-        });
+            DB::transaction(function () use ($loan, $data, $paths, &$already) {
+                // Kunci baris agar tidak dikembalikan dua kali bersamaan
+                $fresh = Loan::whereKey($loan->id)->lockForUpdate()->first();
+
+                if ($fresh->returned_at !== null) {
+                    $already = true;
+                    return;
+                }
+
+                $fresh->update(['returned_at' => $data['returned_at']]);
+
+                foreach ($paths as $path) {
+                    LoanPhoto::create([
+                        'loan_id'    => $fresh->id,
+                        'stage'      => 'sesudah',
+                        'path'       => $path,
+                        'created_by' => auth()->id(),
+                    ]);
+                }
+            });
+        } catch (\Throwable $e) {
+            $this->discardFiles($paths);
+            throw $e;
+        }
 
         if ($already) {
+            $this->discardFiles($paths);
+
             return back()->with('info', 'Peminjaman ini sudah dikembalikan sebelumnya.');
         }
 
-        return back()->with('success', "{$loan->borrower_name} telah mengembalikan {$loan->quantity} unit.");
+        $redirect = back()->with('success', "{$loan->borrower_name} telah mengembalikan {$loan->quantity} unit"
+            . (count($paths) ? ' dengan ' . count($paths) . ' foto kondisi barang.' : '.'));
+
+        if (! count($paths)) {
+            $redirect->with('warning', 'Pengembalian dicatat tanpa foto kondisi barang. Foto bisa ditambahkan lewat Edit Peminjaman.');
+        }
+
+        return $redirect;
     }
 
     public function edit(Loan $loan)
     {
-        $loan->load(['asset', 'originLocation.parent']);
+        $loan->load(['asset', 'originLocation.parent', 'photos']);
 
         // Batas jumlah: total unit dikurangi unit yang dipinjam peminjam lain (hanya untuk peminjaman aktif)
         $maxQty = $loan->is_active
@@ -257,6 +333,41 @@ class LoanController extends Controller
 
         return redirect()->route('loans.index')
             ->with('success', "Data peminjaman {$data['borrower_name']} berhasil diperbarui.");
+    }
+
+    // ---------- helper ----------
+
+    private function photoRules(string $key): array
+    {
+        return [
+            $key        => 'nullable|array|max:' . self::MAX_PHOTOS,
+            $key . '.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=8000,max_height=8000',
+        ];
+    }
+
+    private function photoMessages(string $key): array
+    {
+        return [
+            $key . '.max'            => 'Maksimal ' . self::MAX_PHOTOS . ' foto.',
+            $key . '.*.uploaded'     => 'Foto gagal diunggah. Ukurannya mungkin melebihi batas server.',
+            $key . '.*.image'        => 'File harus berupa gambar.',
+            $key . '.*.mimes'        => 'Format foto harus JPG, PNG, atau WebP.',
+            $key . '.*.max'          => 'Ukuran tiap foto maksimal 5 MB.',
+            $key . '.*.dimensions'   => 'Resolusi foto terlalu besar (maksimal 8000 x 8000 piksel).',
+        ];
+    }
+
+    private function photoDir(): string
+    {
+        return 'loans/' . now()->format('Y/m');
+    }
+
+    // Hapus berkas yang sudah tersimpan bila proses gagal
+    private function discardFiles(array $paths): void
+    {
+        foreach ($paths as $path) {
+            Storage::disk('local')->delete($path);
+        }
     }
 
     // Aset yang bisa dipinjam beserta sisa stoknya

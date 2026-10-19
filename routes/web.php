@@ -15,6 +15,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\LoanPhotoController;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -46,6 +47,7 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
         Route::get('scan', [ScanController::class, 'index'])->name('scan.index');
         Route::get('scan/cari', [ScanController::class, 'find'])->name('scan.find');
         Route::get('lokasi/{location}/foto', [LocationController::class, 'photo'])->name('locations.photo');
+        Route::get('peminjam/foto/{photo}', [LoanPhotoController::class, 'show'])->name('loans.photo');
     });
 
     Route::middleware('can:manage-users')->group(function () {
@@ -93,5 +95,7 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
         Route::get('mutasi', [StockMovementController::class, 'index'])->name('movements.index');
         Route::get('mutasi/tambah', [StockMovementController::class, 'create'])->name('movements.create');
         Route::post('mutasi', [StockMovementController::class, 'store'])->name('movements.store');
+        Route::post('peminjam/{loan}/foto', [LoanPhotoController::class, 'store'])->name('loans.photos.store');
+        Route::delete('peminjam/foto/{photo}', [LoanPhotoController::class, 'destroy'])->name('loans.photos.destroy');
     });
 });
