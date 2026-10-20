@@ -137,6 +137,15 @@
                     <input type="date" name="sampai" value="{{ request('sampai') }}" class="form-control">
                 </div>
             </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="foto" value="1" id="foto" @checked(request('foto'))>
+                    <label class="form-check-label" for="foto">
+                        Sertakan <strong>foto bukti</strong> (sebelum dan sesudah dikembalikan) pada cetak, PDF, dan Word
+                    </label>
+                    <div class="form-text">Satu halaman per peminjaman, maksimal 30 peminjaman berfoto. Excel dan CSV hanya memuat jumlah foto.</div>
+                </div>
+            </div>
         @endif
 
         <div class="col-12 d-flex flex-wrap gap-2 align-items-center mt-2">
@@ -187,6 +196,57 @@
         <div class="table-responsive">
             @include('reports._table_' . $parts[$type])
         </div>
+    @endif
+
+    {{-- Pratinjau lampiran foto bukti --}}
+    @if ($type === 'peminjaman' && $evidence)
+        <hr>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h6 fw-semibold mb-0"><i class="bi bi-images"></i> Lampiran Foto Bukti</h2>
+            <small class="text-muted">{{ $evidence['loans']->count() }} dari {{ $evidence['total'] }} peminjaman berfoto</small>
+        </div>
+
+        @if ($evidence['limited'])
+            <div class="alert alert-warning small py-2">
+                Hanya {{ $evidence['limit'] }} peminjaman berfoto pertama yang disertakan dalam cetak, PDF, dan Word.
+                Persempit filter (status atau tanggal) untuk melihat sisanya.
+            </div>
+        @endif
+
+        @forelse ($evidence['loans'] as $l)
+            @php
+                $before = $l->photos->where('stage', 'sebelum')->values();
+                $after  = $l->photos->where('stage', 'sesudah')->values();
+            @endphp
+            <div class="p-3 mb-3" style="background:var(--surface-2); border-radius:12px">
+                <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                    <div>
+                        <strong>{{ $l->borrower_name }}</strong>
+                        <span class="text-muted small">&middot; {{ $l->asset->asset_code }} {{ $l->asset->name }} &middot; {{ $l->quantity }} unit</span>
+                    </div>
+                    <span class="badge rounded-pill text-bg-{{ $l->status_color }}">{{ $l->status_label }}</span>
+                </div>
+                <div class="row g-3">
+                    @foreach ([['Sebelum dipinjam', $before], ['Sesudah dikembalikan', $after]] as [$ttl, $list])
+                        <div class="col-12 col-md-6">
+                            <div class="small fw-semibold mb-1">{{ $ttl }} ({{ $list->count() }})</div>
+                            <div class="d-flex flex-wrap gap-2">
+                                @forelse ($list as $p)
+                                    <a href="{{ $p->url }}" target="_blank" rel="noopener">
+                                        <img src="{{ $p->url }}" alt="{{ $ttl }}" loading="lazy"
+                                             style="width:110px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #EAEAEA">
+                                    </a>
+                                @empty
+                                    <span class="small text-muted">Tidak ada foto.</span>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @empty
+            <div class="text-center text-muted py-3 small">Tidak ada peminjaman berfoto pada filter ini.</div>
+        @endforelse
     @endif
 </div>
 @endsection

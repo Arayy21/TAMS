@@ -67,4 +67,42 @@ class ImageUpload
 
         return $path;
     }
+
+    // Versi ringan untuk laporan (PDF dan Word): bingkai tetap (default 800 x 600), foto tidak dipotong dan tidak diperbesar
+    public static function reportThumbnail(string $path, int $w = 800, int $h = 600, int $quality = 75): ?string
+    {
+        $disk = Storage::disk('local');
+
+        if (! $disk->exists($path)) {
+            return null;
+        }
+
+        $raw = $disk->get($path);
+
+        // Tanpa ekstensi GD: pakai berkas asli
+        if (! function_exists('imagecreatefromstring')) {
+            return $raw;
+        }
+
+        $src = @imagecreatefromstring($raw);
+
+        if ($src === false) {
+            return null;
+        }
+
+        $sw = imagesx($src);
+        $sh = imagesy($src);
+        $k  = min($w / $sw, $h / $sh, 1);
+        $nw = max(1, (int) round($sw * $k));
+        $nh = max(1, (int) round($sh * $k));
+
+        $canvas = imagecreatetruecolor($w, $h);
+        imagefill($canvas, 0, 0, imagecolorallocate($canvas, 242, 242, 242));
+        imagecopyresampled($canvas, $src, (int) (($w - $nw) / 2), (int) (($h - $nh) / 2), 0, 0, $nw, $nh, $sw, $sh);
+
+        ob_start();
+        imagejpeg($canvas, null, $quality);
+
+        return (string) ob_get_clean();
+    }
 }
