@@ -531,13 +531,13 @@ class ReportController extends Controller
             })->all();
 
             $total = ['', '', 'Total (' . $data->count() . ' aset)', '', '',
-                      $data->sum('quantity'),
-                      $data->sum(fn ($a) => (int) $a->borrowed_sum),
-                      $data->sum(fn ($a) => max(0, $a->quantity - (int) $a->borrowed_sum)),
-                      '', ''];
+                    $data->sum('quantity'),
+                    $data->sum(fn ($a) => (int) $a->borrowed_sum),
+                    $data->sum(fn ($a) => max(0, $a->quantity - (int) $a->borrowed_sum)),
+                    '', ''];
         } elseif ($type === 'opname') {
             $head = ['No', 'Sesi', 'Kode', 'Nama Aset', 'Lokasi', 'Di Sistem', 'Dipinjam', 'Seharusnya',
-                     'Fisik', 'Selisih', 'Kondisi Sistem', 'Kondisi Fisik', 'Catatan'];
+                    'Fisik', 'Selisih', 'Kondisi Sistem', 'Kondisi Fisik', 'Catatan'];
 
             $rows = $data->values()->map(fn ($it, $i) => [
                 $i + 1, $it->opname->code, $it->asset->asset_code, $it->asset->name, $it->asset->location->name,
@@ -551,19 +551,19 @@ class ReportController extends Controller
 
             $checked = $data->filter(fn ($i) => $i->is_checked);
             $summary = 'Sesuai ' . $checked->filter(fn ($i) => $i->difference === 0)->count()
-                     . ' | Kurang ' . $checked->filter(fn ($i) => $i->difference < 0)->count()
-                     . ' | Lebih ' . $checked->filter(fn ($i) => $i->difference > 0)->count()
-                     . ' | Belum dicek ' . ($data->count() - $checked->count());
+                    . ' | Kurang ' . $checked->filter(fn ($i) => $i->difference < 0)->count()
+                    . ' | Lebih ' . $checked->filter(fn ($i) => $i->difference > 0)->count()
+                    . ' | Belum dicek ' . ($data->count() - $checked->count());
 
             $total = ['', 'Total (' . $data->count() . ' baris)', '', '', '',
-                      $data->sum('system_qty'),
-                      $data->sum('borrowed_qty'),
-                      $data->sum(fn ($i) => $i->expected_qty),
-                      $checked->sum('physical_qty'),
-                      $summary, '', '', ''];
+                    $data->sum('system_qty'),
+                    $data->sum('borrowed_qty'),
+                    $data->sum(fn ($i) => $i->expected_qty),
+                    $checked->sum('physical_qty'),
+                    $summary, '', '', ''];
         } elseif ($type === 'mutasi') {
             $head = ['No', 'Tanggal', 'Kode', 'Nama Aset', 'Jenis', 'Alasan', 'Jumlah',
-                     'Stok Sebelum', 'Stok Sesudah', 'Nota', 'Petugas', 'Catatan'];
+                    'Stok Sebelum', 'Stok Sesudah', 'Nota', 'Petugas', 'Catatan'];
 
             $rows = $data->values()->map(fn ($m, $i) => [
                 $i + 1,
@@ -585,14 +585,20 @@ class ReportController extends Controller
             $net = $in - $out;
 
             $total = ['', 'Total (' . $data->count() . ' mutasi)', '', '',
-                      'Masuk ' . $in, 'Keluar ' . $out, ($net > 0 ? '+' : '') . $net,
-                      '', '', '', '', ''];
+                    'Masuk ' . $in, 'Keluar ' . $out, ($net > 0 ? '+' : '') . $net,
+                    '', '', '', '', ''];
         } else {
-            $head = ['No', 'Peminjam', 'Kontak / Divisi', 'Aset', 'Jumlah', 'Tgl Pinjam', 'Batas Kembali', 'Tgl Kembali', 'Status', 'Foto (Sebelum/Sesudah)'];
+            $head = ['No', 'Peminjam', 'Kontak / Divisi', 'Aset', 'Jumlah', 'Lokasi Awal', 'Lokasi Terakhir',
+                    'Tgl Pinjam', 'Batas Kembali', 'Tgl Kembali', 'Status', 'Foto (Sebelum/Sesudah)'];
 
             $rows = $data->values()->map(fn ($l, $i) => [
-                $i + 1, $l->borrower_name, $l->borrower_contact ?? '-',
-                $l->asset->asset_code . ' - ' . $l->asset->name, $l->quantity,
+                $i + 1,
+                $l->borrower_name,
+                $l->borrower_contact ?? '-',
+                $l->asset->asset_code . ' - ' . $l->asset->name,
+                $l->quantity,
+                $l->originLocation?->full_name ?? '-',
+                $l->last_location_label ?? 'Belum dicatat',
                 $l->loaned_at->format('d M Y'),
                 $l->due_at?->format('d M Y') ?? '-',
                 $l->returned_at?->format('d M Y') ?? '-',
@@ -600,7 +606,7 @@ class ReportController extends Controller
                 $l->photos->where('stage', 'sebelum')->count() . ' / ' . $l->photos->where('stage', 'sesudah')->count(),
             ])->all();
 
-            $total = ['', 'Total (' . $data->count() . ' peminjaman)', '', '', $data->sum('quantity'), '', '', '', '', ''];
+            $total = ['', 'Total (' . $data->count() . ' peminjaman)', '', '', $data->sum('quantity'), '', '', '', '', '', '', ''];
         }
 
         return [$head, $rows, $total];
