@@ -74,7 +74,15 @@
                     <tr>
                         <td><input type="checkbox" class="form-check-input row-check" name="ids[]" value="{{ $a->id }}" aria-label="Pilih {{ $a->asset_code }}"></td>
                         <td><a href="{{ route('assets.show', $a) }}" class="fw-semibold text-decoration-none">{{ $a->asset_code }}</a></td>
-                        <td>{{ $a->name }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                @if ($a->photo_url)
+                                    <img src="{{ $a->photo_url }}" alt="" loading="lazy"
+                                        style="width:40px;height:40px;object-fit:cover;border-radius:8px;border:1px solid #EAEAEA;flex-shrink:0">
+                                @endif
+                                <span>{{ $a->name }}</span>
+                            </div>
+                        </td>
                         <td>{{ $a->category->name }}</td>
                         <td>{{ $a->location->name }}</td>
                         <td class="text-center fw-semibold">{{ $a->quantity }}</td>

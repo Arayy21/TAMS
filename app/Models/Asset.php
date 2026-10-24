@@ -13,7 +13,7 @@ class Asset extends Model
     protected $fillable = [
         'asset_code', 'name', 'category_id', 'location_id', 'quantity',
         'asset_condition', 'status', 'description',
-        'serial_number', 'purchase_date', 'created_by', 'updated_by',
+        'serial_number', 'purchase_date', 'photo', 'created_by', 'updated_by',
     ];
 
     protected $casts = ['purchase_date' => 'date'];
@@ -43,6 +43,17 @@ class Asset extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    // Warna badge Bootstrap
+    public function getConditionColorAttribute(): string
+    {
+        return ['baik' => 'success', 'rusak' => 'danger', 'perbaikan' => 'warning'][$this->asset_condition] ?? 'secondary';
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return $this->status === 'aktif' ? 'primary' : 'secondary';
+    }
+
     // Jumlah unit yang sedang dipinjam
     public function getBorrowedAttribute(): int
     {
@@ -55,16 +66,12 @@ class Asset extends Model
         return max(0, $this->quantity - $this->borrowed);
     }
 
-
-    // Warna badge Bootstrap
-    public function getConditionColorAttribute(): string
+    // Alamat foto aset (relatif, hanya bisa dibuka setelah login). Angka ?v= memaksa browser memuat ulang saat foto diganti.
+    public function getPhotoUrlAttribute(): ?string
     {
-        return ['baik' => 'success', 'rusak' => 'danger', 'perbaikan' => 'warning'][$this->asset_condition] ?? 'secondary';
-    }
-
-    public function getStatusColorAttribute(): string
-    {
-        return $this->status === 'aktif' ? 'primary' : 'secondary';
+        return $this->photo
+            ? route('assets.photo', ['asset' => $this->id], false) . '?v=' . substr(md5($this->photo), 0, 8)
+            : null;
     }
 
     // Kode berikutnya, contoh TCH-0001. Nomor diambil dari angka terbesar yang pernah ada,

@@ -53,19 +53,19 @@
         @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 
-    {{-- Dua kolom di bawah PERLU DIKONFIRMASI KE PERUSAHAAN (wajib atau tidak) --}}
     <div class="col-md-6">
-        <div class="col-md-6">
-            <label class="form-label">Jumlah Unit <span class="text-danger">*</span></label>
-            <input type="number" name="quantity" min="1" value="{{ old('quantity', $a->quantity ?? 1) }}"
-                class="form-control @error('quantity') is-invalid @enderror">
-            @error('quantity') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            <div class="form-text">Jumlah total unit untuk aset ini.</div>
-        </div>
+        <label class="form-label">Jumlah Unit <span class="text-danger">*</span></label>
+        <input type="number" name="quantity" min="{{ $a ? 0 : 1 }}" value="{{ old('quantity', $a->quantity ?? 1) }}"
+               class="form-control @error('quantity') is-invalid @enderror">
+        @error('quantity') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <div class="form-text">Jumlah total unit untuk aset ini.</div>
+    </div>
+    <div class="col-md-6">
         <label class="form-label">Nomor Seri <span class="text-muted">(opsional)</span></label>
         <input type="text" name="serial_number" value="{{ old('serial_number', $a->serial_number ?? '') }}" class="form-control @error('serial_number') is-invalid @enderror">
         @error('serial_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+
     <div class="col-md-6">
         <label class="form-label">Tanggal Pembelian <span class="text-muted">(opsional)</span></label>
         <input type="date" name="purchase_date" value="{{ old('purchase_date', optional($a->purchase_date ?? null)->format('Y-m-d')) }}" class="form-control @error('purchase_date') is-invalid @enderror">
@@ -76,6 +76,25 @@
         <label class="form-label">Keterangan <span class="text-muted">(opsional)</span></label>
         <textarea name="description" rows="3" class="form-control @error('description') is-invalid @enderror">{{ old('description', $a->description ?? '') }}</textarea>
         @error('description') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    </div>
+
+    <div class="col-12">
+        <label class="form-label">Foto Aset <span class="text-muted">(opsional)</span></label>
+
+        @if ($a && $a->photo_url)
+            <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                <img src="{{ $a->photo_url }}" alt="Foto {{ $a->name }}"
+                     style="width:120px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #EAEAEA">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="remove_photo" value="1" id="remove_photo">
+                    <label class="form-check-label" for="remove_photo">Hapus foto saat ini</label>
+                </div>
+            </div>
+            <div class="form-text mb-2">Untuk mengganti, ambil atau pilih foto baru di bawah.</div>
+        @endif
+
+        @include('loans._photo_picker', ['id' => 'assetPhoto', 'name' => 'photo', 'max' => 1])
+        <div class="form-text">Foto membantu petugas mengenali barang saat opname dan peminjaman.</div>
     </div>
 </div>
 

@@ -42,6 +42,7 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
             ->parameters(['aset' => 'asset'])
             ->names('assets');
         Route::get('aset/{asset}/barcode', [AssetController::class, 'barcode'])->name('assets.barcode');
+        Route::get('aset/{asset}/foto', [AssetController::class, 'photo'])->name('assets.photo');
         Route::get('aset/{asset}/label', [LabelController::class, 'single'])->name('assets.label');
         Route::post('aset/label-massal', [LabelController::class, 'bulk'])->name('assets.labels');
         Route::get('scan', [ScanController::class, 'index'])->name('scan.index');

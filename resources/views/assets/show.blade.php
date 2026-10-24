@@ -3,18 +3,19 @@
 
 @section('content')
 @php
-    $isAdmin = auth()->user()->isAdmin();
-    $loc     = $asset->location;
-    $photo   = $loc->photo_url;
-    $path    = ($loc->parent ? $loc->parent->name . ' › ' : '') . $loc->name;
-    $others  = max(0, $roomTotal - 1);
+    $isAdmin    = auth()->user()->isAdmin();
+    $loc        = $asset->location;
+    $photo      = $loc->photo_url;
+    $assetPhoto = $asset->photo_url;
+    $path       = ($loc->parent ? $loc->parent->name . ' › ' : '') . $loc->name;
+    $others     = max(0, $roomTotal - 1);
 @endphp
 
 <style>
     .room-photo { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 12px; border: 1px solid var(--border); display: block; }
-    .room-none { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; border: 1px dashed #CFCFCF; color: #A3A3A3;
+    .room-none, .asset-none { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; border: 1px dashed #CFCFCF; color: #A3A3A3;
                  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 12px; }
-    .room-none i { font-size: 2rem; }
+    .room-none i, .asset-none i { font-size: 2rem; }
 </style>
 
 <nav class="small text-muted mb-3">
@@ -24,7 +25,7 @@
 <div class="row g-3 mb-3">
     <div class="col-12 col-xl-8">
         <div class="card-tams p-4 h-100">
-            <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
                 <div>
                     <h2 class="h4 fw-bold mb-2">{{ $asset->name }}</h2>
                     <span class="badge rounded-pill text-bg-{{ $asset->condition_color }}">{{ ucfirst($asset->asset_condition) }}</span>
@@ -40,24 +41,43 @@
                 </div>
             </div>
 
-            <div class="row g-3">
-                @foreach ([
-                    'Kode Aset'         => $asset->asset_code,
-                    'Kategori'          => $asset->category->name,
-                    'Lokasi'            => $path,
-                    'Jumlah Unit'       => $asset->quantity . ' (tersedia ' . $asset->available . ')',
-                    'Nomor Seri'        => $asset->serial_number ?? '-',
-                    'Tanggal Pembelian' => $asset->purchase_date?->translatedFormat('d F Y') ?? '-',
-                    'Dicatat'           => $asset->created_at?->translatedFormat('d F Y') ?? '-',
-                ] as $label => $value)
-                    <div class="col-sm-6">
-                        <div class="text-muted small">{{ $label }}</div>
-                        <div class="fw-semibold">{{ $value }}</div>
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    @if ($assetPhoto)
+                        <button type="button" class="btn p-0 border-0 w-100" data-bs-toggle="modal" data-bs-target="#modalAssetPhoto"
+                                aria-label="Perbesar foto {{ $asset->name }}">
+                            <img src="{{ $assetPhoto }}" alt="Foto {{ $asset->name }}" class="room-photo">
+                        </button>
+                    @else
+                        <div class="asset-none">
+                            <i class="bi bi-image"></i>
+                            <div class="small mt-1">Belum ada foto aset</div>
+                            <a href="{{ route('assets.edit', $asset) }}" class="small text-decoration-none mt-1">Tambah foto</a>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="col-12 col-md-8">
+                    <div class="row g-3">
+                        @foreach ([
+                            'Kode Aset'         => $asset->asset_code,
+                            'Kategori'          => $asset->category->name,
+                            'Lokasi'            => $path,
+                            'Jumlah Unit'       => $asset->quantity . ' (tersedia ' . $asset->available . ')',
+                            'Nomor Seri'        => $asset->serial_number ?? '-',
+                            'Tanggal Pembelian' => $asset->purchase_date?->translatedFormat('d F Y') ?? '-',
+                            'Dicatat'           => $asset->created_at?->translatedFormat('d F Y') ?? '-',
+                        ] as $label => $value)
+                            <div class="col-sm-6">
+                                <div class="text-muted small">{{ $label }}</div>
+                                <div class="fw-semibold">{{ $value }}</div>
+                            </div>
+                        @endforeach
+                        <div class="col-12">
+                            <div class="text-muted small">Keterangan</div>
+                            <div>{{ $asset->description ?? '-' }}</div>
+                        </div>
                     </div>
-                @endforeach
-                <div class="col-12">
-                    <div class="text-muted small">Keterangan</div>
-                    <div>{{ $asset->description ?? '-' }}</div>
                 </div>
             </div>
         </div>
@@ -145,6 +165,7 @@
     </div>
 </div>
 
+{{-- Sedang dipinjam --}}
 <div class="card-tams p-4 mb-3">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
@@ -206,6 +227,7 @@
         <div class="text-muted small">Aset ini sedang berada di lokasi asalnya.</div>
     @endif
 </div>
+
 @if ($isAdmin)
     <div class="card-tams p-4 mb-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -292,6 +314,22 @@
         </table>
     </div>
 </div>
+
+@if ($assetPhoto)
+    <div class="modal fade" id="modalAssetPhoto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $asset->asset_code }} &middot; {{ $asset->name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{{ $assetPhoto }}" alt="Foto {{ $asset->name }}" class="img-fluid rounded" loading="lazy">
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 
 @if ($photo)
     <div class="modal fade" id="modalRoom" tabindex="-1" aria-hidden="true">

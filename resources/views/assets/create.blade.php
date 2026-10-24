@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="card-tams p-4" style="max-width:860px">
-    <form method="POST" action="{{ route('assets.store') }}">
+    <form method="POST" action="{{ route('assets.store') }}" enctype="multipart/form-data">
         @include('assets._form')
     </form>
 </div>

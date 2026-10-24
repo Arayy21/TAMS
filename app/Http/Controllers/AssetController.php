@@ -6,8 +6,12 @@ use App\Models\Asset;
 use App\Models\AssetHistory;
 use App\Models\Category;
 use App\Models\Location;
+use App\Support\ImageUpload;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class AssetController extends Controller
@@ -52,16 +56,31 @@ class AssetController extends Controller
             throw ValidationException::withMessages(['quantity' => 'Jumlah unit minimal 1 untuk aset baru.']);
         }
 
-        $asset = DB::transaction(function () use ($data) {
-            $asset = Asset::create($data + [
-                'asset_code' => Asset::generateCode(),
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id(),
-            ]);
-            $this->log($asset, 'create', null, null, null, 'Aset ditambahkan');
+        $file = $this->uploadedPhoto($request);
+        $path = null;
 
-            return $asset;
-        });
+        try {
+            if ($file) {
+                $path = ImageUpload::store($file, $this->photoDir(), 'photo');
+            }
+
+            $asset = DB::transaction(function () use ($data, $path) {
+                $asset = Asset::create($data + [
+                    'asset_code' => Asset::generateCode(),
+                    'photo'      => $path,
+                    'created_by' => auth()->id(),
+                    'updated_by' => auth()->id(),
+                ]);
+                $this->log($asset, 'create', null, null, null, $path ? 'Aset ditambahkan (dengan foto)' : 'Aset ditambahkan');
+
+                return $asset;
+            });
+        } catch (\Throwable $e) {
+            if ($path) {
+                Storage::disk('local')->delete($path);
+            }
+            throw $e;
+        }
 
         return redirect()->route('assets.show', $asset)
             ->with('success', "Aset {$asset->asset_code} berhasil ditambahkan.");
@@ -123,18 +142,42 @@ class AssetController extends Controller
         }
 
         $asset->fill($this->validated($request));
-        $dirty = $asset->getDirty();
-        $old   = $asset->getOriginal();
 
-        if (! $dirty) {
-            return redirect()->route('assets.show', $asset)->with('info', 'Tidak ada perubahan data.');
+        $oldPhoto = $asset->photo;
+        $newPath  = null;
+        $file     = $this->uploadedPhoto($request);
+
+        try {
+            if ($file) {
+                $newPath      = ImageUpload::store($file, $this->photoDir(), 'photo');
+                $asset->photo = $newPath;
+            } elseif ($request->boolean('remove_photo') && $oldPhoto) {
+                $asset->photo = null;
+            }
+
+            $dirty = $asset->getDirty();
+            $old   = $asset->getOriginal();
+
+            if (! $dirty) {
+                return redirect()->route('assets.show', $asset)->with('info', 'Tidak ada perubahan data.');
+            }
+
+            DB::transaction(function () use ($asset, $dirty, $old) {
+                $asset->updated_by = auth()->id();
+                $asset->save();
+                $this->logChanges($asset, $dirty, $old);
+            });
+        } catch (\Throwable $e) {
+            if ($newPath) {
+                Storage::disk('local')->delete($newPath);
+            }
+            throw $e;
         }
 
-        DB::transaction(function () use ($asset, $dirty, $old) {
-            $asset->updated_by = auth()->id();
-            $asset->save();
-            $this->logChanges($asset, $dirty, $old);
-        });
+        // Foto lama dihapus setelah data berhasil disimpan
+        if ($oldPhoto && $oldPhoto !== $asset->photo) {
+            Storage::disk('local')->delete($oldPhoto);
+        }
 
         return redirect()->route('assets.show', $asset)
             ->with('success', "Aset {$asset->asset_code} berhasil diperbarui.");
@@ -144,7 +187,7 @@ class AssetController extends Controller
     {
         DB::transaction(function () use ($asset) {
             $this->log($asset, 'delete', null, null, null, 'Aset dihapus (arsip)');
-            $asset->delete(); // soft delete
+            $asset->delete(); // soft delete: foto tetap tersimpan
         });
 
         return redirect()->route('assets.index')
@@ -164,11 +207,22 @@ class AssetController extends Controller
         return response($asset->barcodeSvg(), 200, $headers);
     }
 
+    // Menyajikan foto aset (hanya untuk pengguna yang sudah login)
+    public function photo(Asset $asset)
+    {
+        abort_unless($asset->photo && Storage::disk('local')->exists($asset->photo), 404);
+
+        return response()->file(Storage::disk('local')->path($asset->photo), [
+            'Cache-Control'          => 'private, max-age=604800',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
     // ---------- helper ----------
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $v = $request->validate([
             'name'            => 'required|string|max:150',
             'category_id'     => 'required|exists:categories,id',
             'location_id'     => 'required|exists:locations,id',
@@ -178,7 +232,36 @@ class AssetController extends Controller
             'description'     => 'nullable|string|max:1000',
             'serial_number'   => 'nullable|string|max:100',
             'purchase_date'   => 'nullable|date',
+            'photo'           => 'nullable|array|max:1',
+            'photo.*'         => 'image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=8000,max_height=8000',
+            'remove_photo'    => 'nullable|boolean',
+        ], [
+            'photo.max'          => 'Hanya 1 foto yang dapat dilampirkan.',
+            'photo.*.uploaded'   => 'Foto gagal diunggah. Ukurannya mungkin melebihi batas server.',
+            'photo.*.image'      => 'File harus berupa gambar.',
+            'photo.*.mimes'      => 'Format foto harus JPG, PNG, atau WebP.',
+            'photo.*.max'        => 'Ukuran foto maksimal 5 MB.',
+            'photo.*.dimensions' => 'Resolusi foto terlalu besar (maksimal 8000 x 8000 piksel).',
         ]);
+
+        return Arr::except($v, ['photo', 'remove_photo']);
+    }
+
+    // Foto yang diunggah (satu berkas), atau null
+    private function uploadedPhoto(Request $request): ?UploadedFile
+    {
+        $f = $request->file('photo');
+
+        if (is_array($f)) {
+            $f = Arr::first(array_filter($f));
+        }
+
+        return $f instanceof UploadedFile ? $f : null;
+    }
+
+    private function photoDir(): string
+    {
+        return 'assets/' . now()->format('Y/m');
     }
 
     private function logChanges(Asset $asset, array $dirty, array $old): void
@@ -187,6 +270,13 @@ class AssetController extends Controller
         $general = [];
 
         foreach ($dirty as $field => $new) {
+            // Perubahan foto dicatat dengan keterangan
+            if ($field === 'photo') {
+                $msg = $new === null ? 'Foto aset dihapus' : (! empty($old['photo']) ? 'Foto aset diganti' : 'Foto aset ditambahkan');
+                $this->log($asset, 'update', null, null, null, $msg);
+                continue;
+            }
+
             // Perubahan jumlah dicatat dengan nilai lama dan baru
             if ($field === 'quantity') {
                 $this->log($asset, 'update', 'quantity', (string) ($old['quantity'] ?? ''), (string) $new, 'Jumlah unit diubah');
