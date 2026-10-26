@@ -133,9 +133,24 @@
                         data-expected="{{ $it->expected_qty }}"
                         data-syscond="{{ $it->system_condition }}">
                         <td class="cell-title" data-label="Aset">
-                            <a href="{{ route('assets.show', $it->asset_id) }}" target="_blank" class="fw-semibold text-decoration-none">{{ $it->asset->asset_code }}</a>
-                            <div>{{ $it->asset->name }}</div>
-                            <small class="text-muted">{{ $it->asset->category->name }} &middot; {{ $it->asset->location->name }}</small>
+                            <div class="d-flex align-items-center gap-3">
+                                @if ($it->asset->photo_url)
+                                    <a href="{{ $it->asset->photo_url }}" target="_blank" rel="noopener" class="flex-shrink-0">
+                                        <img src="{{ $it->asset->photo_url }}" alt="Foto {{ $it->asset->name }}" loading="lazy"
+                                            style="width:72px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #EAEAEA;display:block">
+                                    </a>
+                                @else
+                                    <div class="d-flex align-items-center justify-content-center text-muted flex-shrink-0" title="Belum ada foto aset"
+                                        style="width:72px;height:54px;border:1px dashed #CFCFCF;border-radius:8px">
+                                        <i class="bi bi-image"></i>
+                                    </div>
+                                @endif
+                                <div style="min-width:0">
+                                    <a href="{{ route('assets.show', $it->asset_id) }}" target="_blank" class="fw-semibold text-decoration-none">{{ $it->asset->asset_code }}</a>
+                                    <div>{{ $it->asset->name }}</div>
+                                    <small class="text-muted">{{ $it->asset->category->name }} &middot; {{ $it->asset->location->name }}</small>
+                                </div>
+                            </div>
                         </td>
                         <td class="cell-num text-center" data-label="Di sistem">{{ $it->system_qty }}</td>
                         <td class="cell-num text-center" data-label="Dipinjam">{{ $it->borrowed_qty }}</td>

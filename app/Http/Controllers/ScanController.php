@@ -64,6 +64,7 @@ class ScanController extends Controller
                 'id'        => $asset->id,
                 'code'      => $asset->asset_code,
                 'name'      => $asset->name,
+                'photo'     => $asset->photo_url,
                 'category'  => $asset->category->name ?? '-',
                 'location'  => $asset->location?->full_name ?? '-',
                 'condition' => $asset->asset_condition,

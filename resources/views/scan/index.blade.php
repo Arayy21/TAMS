@@ -147,15 +147,34 @@
         var card = h('div', 'card-tams result-card p-4');
 
         var top = h('div', 'd-flex justify-content-between align-items-start gap-2 mb-2');
-        var left = h('div');
+        var lead = h('div', 'd-flex gap-3 align-items-start');
+        lead.style.minWidth = '0';
+
+        // Foto aset (atau kotak kosong bila belum ada)
+        if (a.photo) {
+            var link = h('a'); link.href = a.photo; link.target = '_blank'; link.rel = 'noopener'; link.style.flexShrink = '0';
+            var img = h('img'); img.src = a.photo; img.alt = 'Foto ' + a.name; img.loading = 'lazy';
+            img.style.cssText = 'width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block';
+            link.append(img); lead.append(link);
+        } else {
+            var none = h('div', 'd-flex align-items-center justify-content-center text-muted');
+            none.title = 'Belum ada foto aset';
+            none.style.cssText = 'width:96px;height:72px;border:1px dashed #CFCFCF;border-radius:10px;flex-shrink:0';
+            none.append(h('i', 'bi bi-image fs-4'));
+            lead.append(none);
+        }
+
+        var left = h('div'); left.style.minWidth = '0';
         var code = h('div', 'fw-bold fs-5', a.code); code.style.color = 'var(--primary)';
         left.append(code, h('div', 'fw-semibold', a.name), h('div', 'small text-muted', a.category + ' \u00B7 Lokasi asal: ' + a.location));
+        lead.append(left);
+
         var badges = h('div', 'd-flex gap-1 flex-wrap justify-content-end');
         badges.append(
             h('span', 'badge rounded-pill text-bg-' + (CONDITION[a.condition] || 'secondary'), a.condition.charAt(0).toUpperCase() + a.condition.slice(1)),
             h('span', 'badge rounded-pill text-bg-' + (a.status === 'aktif' ? 'primary' : 'secondary'), a.status.charAt(0).toUpperCase() + a.status.slice(1))
         );
-        top.append(left, badges);
+        top.append(lead, badges);
 
         var stats = h('div', 'row g-2 my-2 text-center');
         [['Jumlah', a.quantity], ['Tersedia', a.available]].forEach(function (s) {

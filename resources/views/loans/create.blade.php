@@ -36,14 +36,28 @@
                 <select name="asset_id" id="asset_id" class="form-select @error('asset_id') is-invalid @enderror">
                     <option value="">Pilih aset</option>
                     @foreach ($assets as $a)
-                        <option value="{{ $a->id }}" data-available="{{ $a->available_qty }}" data-total="{{ $a->quantity }}"
-                                @selected(old('asset_id', $selected) == $a->id)>
-                            {{ $a->asset_code }} - {{ $a->name }} (tersedia {{ $a->available_qty }})
-                        </option>
-                    @endforeach
+                    <option value="{{ $a->id }}" data-available="{{ $a->available_qty }}" data-total="{{ $a->quantity }}"
+                            data-code="{{ $a->asset_code }}" data-name="{{ $a->name }}" data-photo="{{ $a->photo_url }}"
+                            @selected(old('asset_id', $selected) == $a->id)>
+                        {{ $a->asset_code }} - {{ $a->name }} (tersedia {{ $a->available_qty }})
+                    </option>
+                @endforeach
                 </select>
                 @error('asset_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 <div class="form-text" id="infoStok">Pilih aset untuk melihat sisa tersedia.</div>
+
+            <div id="assetPreview" class="mt-2 p-2 gap-3 align-items-center" style="display:none;background:var(--surface-2);border-radius:12px">
+                <a id="apLink" href="#" target="_blank" rel="noopener" style="flex-shrink:0;display:none">
+                    <img id="apImg" alt="Foto aset" style="width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);display:block">
+                </a>
+                <div id="apNone" class="align-items-center justify-content-center text-muted"
+                    style="display:none;width:96px;height:72px;border:1px dashed #CFCFCF;border-radius:10px;flex-shrink:0">
+                    <i class="bi bi-image fs-4"></i>
+                </div>
+                <div style="min-width:0">
+                    <div class="fw-semibold" id="apTitle"></div>
+                    <div class="small text-muted" id="apSub"></div>
+                </div>
             </div>
 
             <div class="col-md-6">
@@ -135,17 +149,35 @@
     var URL_FIND = @json(route('scan.find'));
 
     // ----- Informasi stok -----
+    var prev = document.getElementById('assetPreview'), apLink = document.getElementById('apLink'),
+    apImg = document.getElementById('apImg'), apNone = document.getElementById('apNone'),
+    apTitle = document.getElementById('apTitle'), apSub = document.getElementById('apSub');
+
     function updateStok() {
         var opt = sel.selectedOptions[0];
         if (! opt || ! opt.dataset.available) {
             info.textContent = 'Pilih aset untuk melihat sisa tersedia.';
             qty.removeAttribute('max');
+            prev.style.display = 'none';
             return;
         }
+
         var av = parseInt(opt.dataset.available, 10);
         info.textContent = 'Tersedia ' + av + ' dari ' + opt.dataset.total + ' unit.';
         qty.max = av;
         if (parseInt(qty.value, 10) > av) qty.value = av;
+
+        // Pratinjau aset yang dipilih
+        apTitle.textContent = opt.dataset.code + ' - ' + opt.dataset.name;
+        apSub.textContent = 'Tersedia ' + av + ' dari ' + opt.dataset.total + ' unit';
+
+        if (opt.dataset.photo) {
+            apImg.src = opt.dataset.photo; apLink.href = opt.dataset.photo;
+            apLink.style.display = 'block'; apNone.style.display = 'none';
+        } else {
+            apLink.style.display = 'none'; apNone.style.display = 'flex';
+        }
+        prev.style.display = 'flex';
     }
     sel.addEventListener('change', updateStok);
     updateStok();
