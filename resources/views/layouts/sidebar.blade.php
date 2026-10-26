@@ -72,13 +72,20 @@
         @endif
 
         @can('manage-users')
-            <div class="nav-group">
-                <div class="nav-label">Pengaturan</div>
-                <a class="nav-link {{ $active('users.*') }}" href="{{ route('users.index') }}">
-                    <i class="bi bi-person-gear me-2"></i> Kelola Pengguna
-                </a>
-            </div>
-        @endcan
+        @php $resetCount = \App\Models\PasswordResetRequest::pending()->count(); @endphp
+        <div class="nav-group">
+            <div class="nav-label">Pengaturan</div>
+            <a class="nav-link {{ $active('users.*') }}" href="{{ route('users.index') }}">
+                <i class="bi bi-person-gear me-2"></i> Kelola Pengguna
+            </a>
+            <a class="nav-link d-flex align-items-center {{ $active('reset-requests.*') }}" href="{{ route('reset-requests.index') }}">
+                <i class="bi bi-key me-2"></i> Permintaan Reset
+                @if ($resetCount > 0)
+                    <span class="badge rounded-pill text-bg-danger ms-auto">{{ $resetCount }}</span>
+                @endif
+            </a>
+        </div>
+    @endcan
 
     </nav>
 

@@ -40,11 +40,18 @@ class ProfileController extends Controller
             'password.different'                => 'Kata sandi baru harus berbeda dari yang lama.',
         ]);
 
-        $request->user()->forceFill([
-            'password'       => Hash::make($request->password),
-            'remember_token' => Str::random(60),
+        $user = $request->user();
+
+        $user->forceFill([
+            'password'             => Hash::make($request->password),
+            'must_change_password' => false,
+            'session_version'      => (int) $user->session_version + 1,
+            'remember_token'       => Str::random(60),
         ])->save();
 
-        return back()->with('success', 'Kata sandi berhasil diubah.');
+        // Sesi ini tetap berlaku, sesi di perangkat lain keluar
+        $request->session()->put('session_version', (int) $user->session_version);
+
+        return back()->with('success', 'Kata sandi berhasil diubah. Sesi di perangkat lain telah dikeluarkan.');
     }
 }

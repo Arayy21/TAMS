@@ -16,6 +16,11 @@ use App\Http\Controllers\LabelController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\LoanPhotoController;
+use App\Http\Controllers\ForcePasswordController;
+use App\Http\Controllers\PasswordRequestController;
+use App\Http\Controllers\PasswordResetController;
+use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsureSessionCurrent;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -26,12 +31,16 @@ Route::get('/', function () {
 Route::middleware(['guest', 'no-back'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::get('/lupa-kata-sandi', [PasswordRequestController::class, 'create'])->name('password.request');
+    Route::post('/lupa-kata-sandi', [PasswordRequestController::class, 'store'])->name('password.request.store');
 });
 
 // Wajib login
-Route::middleware(['auth', 'active', 'no-back'])->group(function () {
+Route::middleware(['auth', 'active', EnsureSessionCurrent::class, EnsurePasswordChanged::class, 'no-back'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/ganti-kata-sandi', [ForcePasswordController::class, 'show'])->name('password.force');
+    Route::put('/ganti-kata-sandi', [ForcePasswordController::class, 'update'])->name('password.force.update');
     Route::get('profil', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('profil/password', [ProfileController::class, 'password'])->name('profile.password');
@@ -52,6 +61,9 @@ Route::middleware(['auth', 'active', 'no-back'])->group(function () {
     });
 
     Route::middleware('can:manage-users')->group(function () {
+        Route::get('pengguna/permintaan-reset', [PasswordResetController::class, 'index'])->name('reset-requests.index');
+        Route::post('pengguna/permintaan-reset/{resetRequest}/setel', [PasswordResetController::class, 'reset'])->name('reset-requests.reset');
+        Route::post('pengguna/permintaan-reset/{resetRequest}/tolak', [PasswordResetController::class, 'reject'])->name('reset-requests.reject');
     Route::resource('pengguna', UserController::class)
         ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
         ->parameters(['pengguna' => 'user'])

@@ -203,7 +203,7 @@
                 </button>
             </form>
 
-            <p class="help-text">Lupa kata sandi? Hubungi admin.</p>
+            <p class="help-text"><a href="{{ route('password.request') }}" style="color:var(--primary);font-weight:600;text-decoration:none">Lupa kata sandi?</a></p>
             <div class="form-foot">&copy; {{ date('Y') }} TAMS &middot; Technolife</div>
         </div>
     </main>
