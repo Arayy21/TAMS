@@ -61,6 +61,10 @@
                 </label>
             </div>
             <div id="camMsg" class="small mt-2"></div>
+            <div class="form-check form-switch mt-2">
+                <input class="form-check-input cam-flip-toggle" type="checkbox" role="switch" id="flipScan">
+                <label class="form-check-label small" for="flipScan">Balik tampilan kiri-kanan (hanya pratinjau)</label>
+            </div>
             <div id="reader-file" class="d-none"></div>
         </div>
     </div>

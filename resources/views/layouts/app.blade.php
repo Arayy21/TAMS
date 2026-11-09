@@ -253,6 +253,11 @@
         .tbl-cards tbody td.cell-empty { display: block !important; order: 0; text-align: center; }
         .tbl-cards tbody td.cell-empty::before { display: none; }
     }
+
+        /* Kamera: balik kiri-kanan (pilihan pengguna, diingat browser) */
+        body.cam-flip [data-video],
+        body.cam-flip #reader video,
+        body.cam-flip #camReader video { transform: scaleX(-1) !important; }
     </style>
 </head>
 <body data-page="{{ request()->route()?->getName() }}">
@@ -368,6 +373,24 @@
         var t;
         window.addEventListener('load', hints);
         window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(hints, 250); });
+    })();
+    </script>
+    <script>
+    (function () {
+        var KEY = 'tams_cam_flip';
+        function stored() { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
+        function apply(on) {
+            document.body.classList.toggle('cam-flip', on);
+            document.querySelectorAll('.cam-flip-toggle').forEach(function (t) { t.checked = on; });
+        }
+        window.camFlipOn = function () { return document.body.classList.contains('cam-flip'); };
+        document.addEventListener('change', function (e) {
+            if (e.target.classList && e.target.classList.contains('cam-flip-toggle')) {
+                try { localStorage.setItem(KEY, e.target.checked ? '1' : '0'); } catch (x) {}
+                apply(e.target.checked);
+            }
+        });
+        apply(stored());
     })();
     </script>
     @stack('scripts')

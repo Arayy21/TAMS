@@ -34,6 +34,10 @@
             <button type="button" class="btn btn-outline-light btn-sm" data-act="native"><i class="bi bi-phone"></i> Aplikasi Kamera HP</button>
             <button type="button" class="btn btn-outline-light btn-sm" data-act="close">Tutup</button>
         </div>
+        <div class="form-check form-switch d-inline-flex align-items-center gap-2 mt-2 mb-0 text-white small">
+            <input class="form-check-input cam-flip-toggle" type="checkbox" role="switch">
+            <label class="form-check-label">Balik kiri-kanan (jika gambar tampak terbalik)</label>
+        </div>
         <div class="small mt-1" style="color:#BDBDBD" data-camnote></div>
     </div>
 
@@ -196,7 +200,11 @@
             var w = video.videoWidth, h = video.videoHeight, k = Math.min(1, MAX_SIDE / Math.max(w, h));
             var c = document.createElement('canvas');
             c.width = Math.round(w * k); c.height = Math.round(h * k);
-            c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+            var ctx = c.getContext('2d');
+
+            // Bila "Balik kiri-kanan" menyala, foto yang tersimpan ikut dibalik agar sama dengan pratinjau
+            if (window.camFlipOn && window.camFlipOn()) { ctx.translate(c.width, 0); ctx.scale(-1, 1); }
+            ctx.drawImage(video, 0, 0, c.width, c.height);
 
             flash.style.opacity = 0.8;
             setTimeout(function () { flash.style.opacity = 0; }, 130);

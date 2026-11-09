@@ -13,6 +13,10 @@
                 </div>
                 <div id="camReader" style="width:100%; border-radius:12px; overflow:hidden"></div>
                 <div id="camStatus" class="small text-muted mt-2 text-center"></div>
+                <div class="form-check form-switch d-flex justify-content-center gap-2 mt-2 mb-0">
+                    <input class="form-check-input cam-flip-toggle" type="checkbox" role="switch" id="flipModal">
+                    <label class="form-check-label small" for="flipModal">Balik tampilan kiri-kanan (hanya pratinjau)</label>
+                </div>
                 <div class="text-center mt-2">
                     <label class="btn btn-outline-secondary btn-sm mb-0">
                         <i class="bi bi-camera"></i> Ambil Foto Barcode
