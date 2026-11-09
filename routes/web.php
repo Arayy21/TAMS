@@ -4,23 +4,23 @@ use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\HistoryController;
-use App\Http\Controllers\LocationController;
-use App\Http\Controllers\LoanController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\StockOpnameController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\LabelController;
-use App\Http\Controllers\ScanController;
-use App\Http\Controllers\StockMovementController;
-use App\Http\Controllers\LoanPhotoController;
 use App\Http\Controllers\ForcePasswordController;
+use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\LabelController;
+use App\Http\Controllers\LoanController;
+use App\Http\Controllers\LoanPhotoController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PasswordRequestController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScanController;
+use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\UserController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureSessionCurrent;
+use Illuminate\Support\Facades\Route;
 
 // Halaman awal diarahkan sesuai role
 Route::get('/', function () {
@@ -64,10 +64,10 @@ Route::middleware(['auth', 'active', EnsureSessionCurrent::class, EnsurePassword
         Route::get('pengguna/permintaan-reset', [PasswordResetController::class, 'index'])->name('reset-requests.index');
         Route::post('pengguna/permintaan-reset/{resetRequest}/setel', [PasswordResetController::class, 'reset'])->name('reset-requests.reset');
         Route::post('pengguna/permintaan-reset/{resetRequest}/tolak', [PasswordResetController::class, 'reject'])->name('reset-requests.reject');
-    Route::resource('pengguna', UserController::class)
-        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
-        ->parameters(['pengguna' => 'user'])
-        ->names('users');
+        Route::resource('pengguna', UserController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+            ->parameters(['pengguna' => 'user'])
+            ->names('users');
     });
 
     Route::get('peminjam', [LoanController::class, 'index'])->name('loans.index');
