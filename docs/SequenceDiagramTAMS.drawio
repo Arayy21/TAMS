@@ -1,319 +1,287 @@
-<mxfile host="app.diagrams.net">
-  <diagram name="Sequence Diagram - Peminjaman" id="e3cH2vczac3z6wdTaGP3">
-    <mxGraphModel dx="1613" dy="940" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+<mxfile host="app.diagrams.net" modified="2026-11-13T06:25:00.000Z" agent="Copilot" version="24.7.17" type="device">
+  <diagram id="seq-login" name="1 - Login dan middleware">
+    <mxGraphModel dx="1800" dy="1300" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1300" math="0" shadow="0">
       <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;sequenceDiagram\r\n    actor Pengguna\r\n    participant Web as Browser / Form\r\n    participant Middleware as Auth dan akun aktif\r\n    participant Controller as LoanController\r\n    participant DB as Database\r\n\r\n    Pengguna-&gt;&gt;Web: Kirim form POST /peminjam\r\n    Web-&gt;&gt;Middleware: Periksa autentikasi dan status aktif\r\n    Middleware-&gt;&gt;Controller: Teruskan request\r\n    Controller-&gt;&gt;Controller: Validasi field dan format\r\n    alt Validasi field gagal\r\n        Controller--&gt;&gt;Web: Kembali dengan error validasi\r\n        Web--&gt;&gt;Pengguna: Tampilkan error pada form\r\n    else Field valid\r\n        Controller-&gt;&gt;DB: BEGIN TRANSACTION\r\n        Controller-&gt;&gt;DB: SELECT aset FOR UPDATE\r\n        DB--&gt;&gt;Controller: Data aset terkunci\r\n        Controller-&gt;&gt;DB: Hitung unit pinjaman aktif\r\n        DB--&gt;&gt;Controller: Total unit sedang dipinjam\r\n        Controller-&gt;&gt;Controller: Periksa status, kondisi, dan sisa unit\r\n        alt Aset tidak layak atau stok tidak cukup\r\n            Controller-&gt;&gt;DB: ROLLBACK\r\n            Controller--&gt;&gt;Web: Gagal dengan error aset/jumlah\r\n            Web--&gt;&gt;Pengguna: Tampilkan pesan kegagalan\r\n        else Aset layak dan stok cukup\r\n            Controller-&gt;&gt;DB: INSERT loans (termasuk created_by)\r\n            DB--&gt;&gt;Controller: Data peminjaman tersimpan\r\n            Controller-&gt;&gt;DB: COMMIT\r\n            Controller-&gt;&gt;DB: Cari pinjaman terlambat lain milik peminjam\r\n            DB--&gt;&gt;Controller: Jumlah pinjaman terlambat\r\n            Controller--&gt;&gt;Web: Redirect ke daftar peminjaman\r\n            Web--&gt;&gt;Pengguna: Tampilkan sukses dan peringatan jika perlu\r\n        end\r\n    end&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="-9DTvP3YIc9Y7QoMal8q-1">
-          <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=10;" vertex="1">
-            <mxGeometry as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="Pengguna" mermaidId="n:Pengguna" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Pengguna" id="-9DTvP3YIc9Y7QoMal8q-2">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);participant=seqActorStick;verticalAlign=bottom;align=center;spacingBottom=4;size=90;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
-            <mxGeometry height="1644" width="150" x="35" y="10" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="Browser / Form" mermaidId="n:Web" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Browser / Form" id="-9DTvP3YIc9Y7QoMal8q-3">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
-            <mxGeometry height="1619" width="150" x="394" y="10" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="Auth dan akun aktif" mermaidId="n:Middleware" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Auth dan akun aktif" id="-9DTvP3YIc9Y7QoMal8q-4">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
-            <mxGeometry height="1619" width="150" x="695" y="10" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="LoanController" mermaidId="n:Controller" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="LoanController" id="-9DTvP3YIc9Y7QoMal8q-5">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
-            <mxGeometry height="1619" width="150" x="895" y="10" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="Database" mermaidId="n:DB" mermaidBaseStyle="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" mermaidBaseValue="Database" id="-9DTvP3YIc9Y7QoMal8q-6">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;edgeStyle&quot;:&quot;elbowEdgeStyle&quot;,&quot;elbow&quot;:&quot;vertical&quot;,&quot;curved&quot;:0,&quot;rounded&quot;:0};lifelineDashed=0;strokeWidth=2;rounded=1;absoluteArcSize=1;arcSize=6;lifelineColor=light-dark(#9370DB,#cccccc);size=65;lifelineMirror=1;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;" vertex="1">
-            <mxGeometry height="1619" width="150" x="1270" y="10" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <UserObject label="alt" mermaidId="n:f0" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="-9DTvP3YIc9Y7QoMal8q-7">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" vertex="1">
-            <mxGeometry height="1213" width="1435" x="10" y="321" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-8" parent="-9DTvP3YIc9Y7QoMal8q-7" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Validasi field gagal]" vertex="1">
-          <mxGeometry height="16" width="1381" x="54" y="2" as="geometry" />
-        </mxCell>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-9" parent="-9DTvP3YIc9Y7QoMal8q-7" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=light-dark(#9370DB,#cccccc);" vertex="1">
-          <mxGeometry height="1" width="1435" y="175" as="geometry" />
-        </mxCell>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-10" parent="-9DTvP3YIc9Y7QoMal8q-7" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Field valid]" vertex="1">
-          <mxGeometry height="16" width="1435" y="177" as="geometry" />
-        </mxCell>
-        <UserObject label="alt" mermaidId="n:f1" mermaidBaseStyle="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" mermaidBaseValue="alt" id="-9DTvP3YIc9Y7QoMal8q-11">
-          <mxCell parent="-9DTvP3YIc9Y7QoMal8q-1" style="html=1;shape=umlFrame;dashed=1;fixDash=1;dashPattern=2 2;strokeWidth=2;pointerEvents=0;dropTarget=0;fillColor=light-dark(#ECECFF,#1f2020);strokeColor=light-dark(#9370DB,#cccccc);fontSize=16;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);height=20;width=50;" vertex="1">
-            <mxGeometry height="607" width="1275" x="90" y="907" as="geometry" />
-          </mxCell>
-        </UserObject>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-12" parent="-9DTvP3YIc9Y7QoMal8q-11" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Aset tidak layak atau stok tidak cukup]" vertex="1">
-          <mxGeometry height="16" width="1221" x="54" y="2" as="geometry" />
-        </mxCell>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-13" parent="-9DTvP3YIc9Y7QoMal8q-11" style="shape=line;dashed=1;fixDash=1;dashPattern=2 2;strokeColor=light-dark(#9370DB,#cccccc);" vertex="1">
-          <mxGeometry height="1" width="1275" y="229" as="geometry" />
-        </mxCell>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-14" parent="-9DTvP3YIc9Y7QoMal8q-11" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontColor=light-dark(#333333,#cccccc);" value="[Aset layak dan stok cukup]" vertex="1">
-          <mxGeometry height="16" width="1275" y="231" as="geometry" />
-        </mxCell>
-        <UserObject label="Kirim form POST /peminjam" mermaidId="e:Pengguna-&gt;Web#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Kirim form POST /peminjam" id="-9DTvP3YIc9Y7QoMal8q-15">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-2" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="290" y="119" />
-              </Array>
-              <mxPoint x="110" y="119" as="sourcePoint" />
-              <mxPoint x="469" y="119" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Periksa autentikasi dan status aktif" mermaidId="e:Web-&gt;Middleware#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Periksa autentikasi dan status aktif" id="-9DTvP3YIc9Y7QoMal8q-16">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-4">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="620" y="163" />
-              </Array>
-              <mxPoint x="469" y="163" as="sourcePoint" />
-              <mxPoint x="770" y="163" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Teruskan request" mermaidId="e:Middleware-&gt;Controller#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Teruskan request" id="-9DTvP3YIc9Y7QoMal8q-17">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-4" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="870" y="207" />
-              </Array>
-              <mxPoint x="770" y="207" as="sourcePoint" />
-              <mxPoint x="970" y="207" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="" mermaidId="e:Controller-&gt;Controller#0" mermaidBaseStyle="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="-9DTvP3YIc9Y7QoMal8q-18">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1005" y="281" />
-                <mxPoint x="1009" y="293" />
-                <mxPoint x="1005" y="305" />
-              </Array>
-              <mxPoint x="970" y="281" as="sourcePoint" />
-              <mxPoint x="970" y="305" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-19" parent="-9DTvP3YIc9Y7QoMal8q-1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;fontColor=light-dark(#333333,#cccccc);" value="Validasi field dan format" vertex="1">
-          <mxGeometry height="18" width="200" x="870" y="257" as="geometry" />
-        </mxCell>
-        <UserObject label="Kembali dengan error validasi" mermaidId="e:Controller-&gt;Web#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Kembali dengan error validasi" id="-9DTvP3YIc9Y7QoMal8q-20">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="720" y="396" />
-              </Array>
-              <mxPoint x="970" y="396" as="sourcePoint" />
-              <mxPoint x="469" y="396" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Tampilkan error pada form" mermaidId="e:Web-&gt;Pengguna#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan error pada form" id="-9DTvP3YIc9Y7QoMal8q-21">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="290" y="450" />
-              </Array>
-              <mxPoint x="469" y="450" as="sourcePoint" />
-              <mxPoint x="110" y="450" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="BEGIN TRANSACTION" mermaidId="e:Controller-&gt;DB#0" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="BEGIN TRANSACTION" id="-9DTvP3YIc9Y7QoMal8q-22">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="540" />
-              </Array>
-              <mxPoint x="970" y="540" as="sourcePoint" />
-              <mxPoint x="1345" y="540" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="SELECT aset FOR UPDATE" mermaidId="e:Controller-&gt;DB#1" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="SELECT aset FOR UPDATE" id="-9DTvP3YIc9Y7QoMal8q-23">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="594" />
-              </Array>
-              <mxPoint x="970" y="594" as="sourcePoint" />
-              <mxPoint x="1345" y="594" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Data aset terkunci" mermaidId="e:DB-&gt;Controller#0" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Data aset terkunci" id="-9DTvP3YIc9Y7QoMal8q-24">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="648" />
-              </Array>
-              <mxPoint x="1345" y="648" as="sourcePoint" />
-              <mxPoint x="970" y="648" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Hitung unit pinjaman aktif" mermaidId="e:Controller-&gt;DB#2" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Hitung unit pinjaman aktif" id="-9DTvP3YIc9Y7QoMal8q-25">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="702" />
-              </Array>
-              <mxPoint x="970" y="702" as="sourcePoint" />
-              <mxPoint x="1345" y="702" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Total unit sedang dipinjam" mermaidId="e:DB-&gt;Controller#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Total unit sedang dipinjam" id="-9DTvP3YIc9Y7QoMal8q-26">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="756" />
-              </Array>
-              <mxPoint x="1345" y="756" as="sourcePoint" />
-              <mxPoint x="970" y="756" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="" mermaidId="e:Controller-&gt;Controller#1" mermaidBaseStyle="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="" id="-9DTvP3YIc9Y7QoMal8q-27">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="edgeStyle=none;curved=1;endArrow=block;endSize=9;verticalAlign=bottom;align=center;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1005" y="857" />
-                <mxPoint x="1009" y="869" />
-                <mxPoint x="1005" y="881" />
-              </Array>
-              <mxPoint x="970" y="857" as="sourcePoint" />
-              <mxPoint x="970" y="881" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <mxCell id="-9DTvP3YIc9Y7QoMal8q-28" parent="-9DTvP3YIc9Y7QoMal8q-1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=16;fontColor=light-dark(#333333,#cccccc);" value="Periksa status, kondisi, dan sisa unit" vertex="1">
-          <mxGeometry height="18" width="200" x="870" y="833" as="geometry" />
-        </mxCell>
-        <UserObject label="ROLLBACK" mermaidId="e:Controller-&gt;DB#3" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="ROLLBACK" id="-9DTvP3YIc9Y7QoMal8q-29">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="982" />
-              </Array>
-              <mxPoint x="970" y="982" as="sourcePoint" />
-              <mxPoint x="1345" y="982" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Gagal dengan error aset/jumlah" mermaidId="e:Controller-&gt;Web#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Gagal dengan error aset/jumlah" id="-9DTvP3YIc9Y7QoMal8q-30">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="720" y="1036" />
-              </Array>
-              <mxPoint x="970" y="1036" as="sourcePoint" />
-              <mxPoint x="469" y="1036" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Tampilkan pesan kegagalan" mermaidId="e:Web-&gt;Pengguna#1" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan pesan kegagalan" id="-9DTvP3YIc9Y7QoMal8q-31">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="290" y="1090" />
-              </Array>
-              <mxPoint x="469" y="1090" as="sourcePoint" />
-              <mxPoint x="110" y="1090" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="INSERT loans (termasuk created_by)" mermaidId="e:Controller-&gt;DB#4" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="INSERT loans (termasuk created_by)" id="-9DTvP3YIc9Y7QoMal8q-32">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="1180" />
-              </Array>
-              <mxPoint x="970" y="1180" as="sourcePoint" />
-              <mxPoint x="1345" y="1180" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Data peminjaman tersimpan" mermaidId="e:DB-&gt;Controller#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Data peminjaman tersimpan" id="-9DTvP3YIc9Y7QoMal8q-33">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="1234" />
-              </Array>
-              <mxPoint x="1345" y="1234" as="sourcePoint" />
-              <mxPoint x="970" y="1234" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="COMMIT" mermaidId="e:Controller-&gt;DB#5" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="COMMIT" id="-9DTvP3YIc9Y7QoMal8q-34">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="1288" />
-              </Array>
-              <mxPoint x="970" y="1288" as="sourcePoint" />
-              <mxPoint x="1345" y="1288" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Cari pinjaman terlambat lain milik peminjam" mermaidId="e:Controller-&gt;DB#6" mermaidBaseStyle="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Cari pinjaman terlambat lain milik peminjam" id="-9DTvP3YIc9Y7QoMal8q-35">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-6">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="1342" />
-              </Array>
-              <mxPoint x="970" y="1342" as="sourcePoint" />
-              <mxPoint x="1345" y="1342" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Jumlah pinjaman terlambat" mermaidId="e:DB-&gt;Controller#3" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Jumlah pinjaman terlambat" id="-9DTvP3YIc9Y7QoMal8q-36">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-6" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-5">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="1158" y="1396" />
-              </Array>
-              <mxPoint x="1345" y="1396" as="sourcePoint" />
-              <mxPoint x="970" y="1396" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Redirect ke daftar peminjaman" mermaidId="e:Controller-&gt;Web#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Redirect ke daftar peminjaman" id="-9DTvP3YIc9Y7QoMal8q-37">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-5" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-3">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="720" y="1450" />
-              </Array>
-              <mxPoint x="970" y="1450" as="sourcePoint" />
-              <mxPoint x="469" y="1450" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
-        <UserObject label="Tampilkan sukses dan peringatan jika perlu" mermaidId="e:Web-&gt;Pengguna#2" mermaidBaseStyle="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" mermaidBaseValue="Tampilkan sukses dan peringatan jika perlu" id="-9DTvP3YIc9Y7QoMal8q-38">
-          <mxCell edge="1" parent="-9DTvP3YIc9Y7QoMal8q-1" source="-9DTvP3YIc9Y7QoMal8q-3" style="dashed=1;fixDash=1;dashPattern=3 3;endArrow=block;endSize=9;verticalAlign=bottom;edgeStyle=elbowEdgeStyle;elbow=vertical;curved=0;rounded=0;fontSize=16;labelBackgroundColor=none;strokeWidth=1.5;strokeColor=light-dark(#333333,#cccccc);fontColor=light-dark(#333333,#cccccc);fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" target="-9DTvP3YIc9Y7QoMal8q-2">
-            <mxGeometry relative="1" as="geometry">
-              <Array as="points">
-                <mxPoint x="290" y="1504" />
-              </Array>
-              <mxPoint x="469" y="1504" as="sourcePoint" />
-              <mxPoint x="110" y="1504" as="targetPoint" />
-            </mxGeometry>
-          </mxCell>
-        </UserObject>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — LOGIN DAN PEMERIKSAAN AKSES&#xa;Login membatasi percobaan; middleware memeriksa akun aktif, versi sesi, dan kewajiban ganti sandi" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1600" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Pengguna" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="70" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser / Form" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="390" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="auth" value="AuthController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="710" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="store" value="User DB / RateLimiter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1030" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth middleware" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1350" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="page" value="Halaman TAMS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1670" y="110" width="110" height="55" as="geometry" /></mxCell>
+        <mxCell id="lu" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="165" as="sourcePoint" /><mxPoint x="165" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lweb" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="485" y="165" as="sourcePoint" /><mxPoint x="485" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lauth" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="165" as="sourcePoint" /><mxPoint x="805" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="ldb" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1125" y="165" as="sourcePoint" /><mxPoint x="1125" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lmw" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1445" y="165" as="sourcePoint" /><mxPoint x="1445" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="lpage" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1725" y="165" as="sourcePoint" /><mxPoint x="1725" y="1120" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m1" value="GET /login" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="220" as="sourcePoint" /><mxPoint x="485" y="220" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m2" value="Tampilkan form login" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="485" y="275" as="sourcePoint" /><mxPoint x="165" y="275" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m3" value="POST /login: email, sandi, remember" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="330" as="sourcePoint" /><mxPoint x="485" y="330" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m4" value="Validasi email dan sandi wajib" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="485" y="385" as="sourcePoint" /><mxPoint x="805" y="385" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m5" value="Cek batas 5 percobaan / menit per email + IP" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="440" as="sourcePoint" /><mxPoint x="1125" y="440" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m6" value="Batas terlampaui: kembali dengan waktu tunggu" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1125" y="495" as="sourcePoint" /><mxPoint x="485" y="495" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m7" value="Auth::attempt(email, sandi, is_active=1)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="550" as="sourcePoint" /><mxPoint x="1125" y="550" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m8" value="Kredensial valid / tidak valid" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1125" y="605" as="sourcePoint" /><mxPoint x="805" y="605" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m9" value="Gagal: catat percobaan; pesan login umum" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="660" as="sourcePoint" /><mxPoint x="485" y="660" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m10" value="Berhasil: hapus batas percobaan; regenerasi sesi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="715" as="sourcePoint" /><mxPoint x="1125" y="715" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m11" value="Perbarui last_login_at" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="770" as="sourcePoint" /><mxPoint x="1125" y="770" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m12" value="Redirect intended atau beranda berdasarkan role" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="805" y="825" as="sourcePoint" /><mxPoint x="485" y="825" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m13" value="Request halaman terproteksi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="485" y="880" as="sourcePoint" /><mxPoint x="1445" y="880" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m14" value="Periksa autentikasi, akun aktif, versi sesi, kewajiban ganti sandi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1445" y="935" as="sourcePoint" /><mxPoint x="1125" y="935" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m15" value="Akun / sesi valid; password force bila diwajibkan" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1125" y="990" as="sourcePoint" /><mxPoint x="1445" y="990" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m16" value="Izinkan halaman atau redirect / login" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1445" y="1045" as="sourcePoint" /><mxPoint x="485" y="1045" as="targetPoint" /></mxGeometry></mxCell>
+        <mxCell id="m17" value="Tampilkan Dashboard (Admin/Pengelola) atau Aset (Staff)" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#ffffff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="485" y="1100" as="sourcePoint" /><mxPoint x="165" y="1100" as="targetPoint" /></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-reset" name="2 - Permintaan reset sandi">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — PERMINTAAN DAN PENANGANAN RESET SANDI&#xa;Respons permintaan publik tidak membocorkan apakah email terdaftar; reset admin menghasilkan sandi sementara" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1800" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Pengguna" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="70" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="370" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="req" value="PasswordRequestController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="670" y="110" width="210" height="55" as="geometry" /></mxCell>
+        <mxCell id="lim" value="RateLimiter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="990" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Users / Reset DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1290" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="admin" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1590" y="110" width="170" height="55" as="geometry" /></mxCell>
+        <mxCell id="reset" value="PasswordResetController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1830" y="110" width="160" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="165" as="sourcePoint"/><mxPoint x="165" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="165" as="sourcePoint"/><mxPoint x="465" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="165" as="sourcePoint"/><mxPoint x="775" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1085" y="165" as="sourcePoint"/><mxPoint x="1085" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1385" y="165" as="sourcePoint"/><mxPoint x="1385" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1675" y="165" as="sourcePoint"/><mxPoint x="1675" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l7" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1910" y="165" as="sourcePoint"/><mxPoint x="1910" y="1100" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="GET /lupa-kata-sandi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="220" as="sourcePoint"/><mxPoint x="465" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="POST email + pesan opsional" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="165" y="275" as="sourcePoint"/><mxPoint x="465" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Validasi format; normalisasi email" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="330" as="sourcePoint"/><mxPoint x="775" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="Cek limit IP (5/10 mnt) dan email (3/jam)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="385" as="sourcePoint"/><mxPoint x="1085" y="385" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Jika terlampaui: kembali dengan error; tanpa pencatatan request" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1085" y="440" as="sourcePoint"/><mxPoint x="465" y="440" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="Cari akun aktif dengan email tersebut" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="495" as="sourcePoint"/><mxPoint x="1385" y="495" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="Akun aktif ditemukan / tidak ditemukan" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1385" y="550" as="sourcePoint"/><mxPoint x="775" y="550" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="Cek request menunggu yang belum kedaluwarsa" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="605" as="sourcePoint"/><mxPoint x="1385" y="605" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="Jika akun aktif dan belum ada request: INSERT menunggu, IP, pesan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="660" as="sourcePoint"/><mxPoint x="1385" y="660" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="Respons sama untuk email terdaftar / tidak terdaftar" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="715" as="sourcePoint"/><mxPoint x="165" y="715" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="Admin buka daftar permintaan; kedaluwarsakan yang lama" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1675" y="790" as="sourcePoint"/><mxPoint x="1910" y="790" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Ambil daftar dan status request + pengguna" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1910" y="845" as="sourcePoint"/><mxPoint x="1385" y="845" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="Pilih reset; verifikasi identitas" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1675" y="900" as="sourcePoint"/><mxPoint x="1910" y="900" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="Transaksi + kunci request dan akun; cek status masih menunggu" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1910" y="955" as="sourcePoint"/><mxPoint x="1385" y="955" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m15" value="Simpan hash sandi sementara; wajib ganti; naikkan session_version; tandai selesai" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1910" y="1010" as="sourcePoint"/><mxPoint x="1385" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m16" value="Tampilkan sandi sementara satu kali kepada admin" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1910" y="1065" as="sourcePoint"/><mxPoint x="1675" y="1065" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-loan" name="3 - Peminjaman">
+    <mxGraphModel dx="2000" dy="1450" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1450" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — PEMINJAMAN DAN PENGEMBALIAN&#xa;Kunci aset / pinjaman saat transaksi; foto opsional disimpan privat dan metadata dicatat di database" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1800" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Pengguna" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser / Form" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="340" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth + role middleware" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="620" y="110" width="200" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="LoanController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="920" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1200" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="fs" value="Private Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1500" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="165" as="sourcePoint"/><mxPoint x="150" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="430" y="165" as="sourcePoint"/><mxPoint x="430" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="720" y="165" as="sourcePoint"/><mxPoint x="720" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="165" as="sourcePoint"/><mxPoint x="1010" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1290" y="165" as="sourcePoint"/><mxPoint x="1290" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1590" y="165" as="sourcePoint"/><mxPoint x="1590" y="1380" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="POST /peminjam: aset, peminjam, jumlah, tanggal, lokasi, foto sebelum" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="220" as="sourcePoint"/><mxPoint x="430" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="auth, active, session, password, role checks" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="430" y="275" as="sourcePoint"/><mxPoint x="720" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Staff / Admin / Pengelola diizinkan untuk peminjaman" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="720" y="330" as="sourcePoint"/><mxPoint x="430" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="Teruskan POST /peminjam" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="720" y="385" as="sourcePoint"/><mxPoint x="1010" y="385" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Validasi aset aktif, tanggal, jumlah, lokasi, foto (maks. 3)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="440" as="sourcePoint"/><mxPoint x="1010" y="460" as="targetPoint"/><Array as="points"><mxPoint x="1035" y="440"/><mxPoint x="1035" y="460"/></Array></mxGeometry></mxCell>
+        <mxCell id="m6" value="Validation error: kembali ke form tanpa transaksi" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="495" as="sourcePoint"/><mxPoint x="430" y="495" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="Simpan file foto sebelum transaksi (bila ada)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="550" as="sourcePoint"/><mxPoint x="1590" y="550" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="BEGIN; SELECT asset FOR UPDATE" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="605" as="sourcePoint"/><mxPoint x="1290" y="605" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="Aset terkunci; cek status aktif + kondisi baik" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1290" y="660" as="sourcePoint"/><mxPoint x="1010" y="660" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="Hitung unit tersedia = jumlah aset - pinjaman aktif" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="715" as="sourcePoint"/><mxPoint x="1290" y="715" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="Aset tidak layak / jumlah melebihi tersedia: ROLLBACK" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="770" as="sourcePoint"/><mxPoint x="1290" y="770" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Kegagalan bisnis: hapus file foto sementara; tampilkan error" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="825" as="sourcePoint"/><mxPoint x="430" y="825" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="INSERT loans (created_by, origin_location_id, last location)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="880" as="sourcePoint"/><mxPoint x="1290" y="880" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="INSERT loan_photos (stage=sebelum), bila foto ada; COMMIT" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="935" as="sourcePoint"/><mxPoint x="1290" y="935" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m15" value="Cari pinjaman terlambat lain milik peminjam" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="990" as="sourcePoint"/><mxPoint x="1290" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m16" value="Redirect daftar; sukses + peringatan jika perlu" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="1045" as="sourcePoint"/><mxPoint x="430" y="1045" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m17" value="POST /peminjam/{loan}/kembali: tanggal + foto sesudah" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="1120" as="sourcePoint"/><mxPoint x="430" y="1120" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m18" value="Validasi tanggal dan batas foto; simpan foto bila ada" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="1175" as="sourcePoint"/><mxPoint x="1590" y="1175" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m19" value="BEGIN; SELECT loan FOR UPDATE; cek returned_at" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="1230" as="sourcePoint"/><mxPoint x="1290" y="1230" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m20" value="Perbarui returned_at + foto sesudah; COMMIT (jika belum kembali)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="1285" as="sourcePoint"/><mxPoint x="1290" y="1285" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m21" value="Redirect sukses / info sudah kembali; bersihkan file yatim" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1010" y="1340" as="sourcePoint"/><mxPoint x="430" y="1340" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-assets" name="4 - Aset dan barcode">
+    <mxGraphModel dx="1900" dy="1120" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1120" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — KELOLA ASET, FOTO, DAN BARCODE&#xa;Route aset memerlukan login dan role; perubahan dicatat sebagai riwayat, penghapusan memakai soft delete" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1700" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Admin / Pengelola / Staff" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="200" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="370" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth / role middleware" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="660" y="110" width="200" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="AssetController / LabelController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="970" y="110" width="220" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="DB: assets / histories" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1300" y="110" width="210" height="55" as="geometry" /></mxCell>
+        <mxCell id="fs" value="Private Storage / Barcode" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1610" y="110" width="230" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="165" as="sourcePoint"/><mxPoint x="160" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="460" y="165" as="sourcePoint"/><mxPoint x="460" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="760" y="165" as="sourcePoint"/><mxPoint x="760" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="165" as="sourcePoint"/><mxPoint x="1080" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1405" y="165" as="sourcePoint"/><mxPoint x="1405" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1725" y="165" as="sourcePoint"/><mxPoint x="1725" y="990" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="POST /aset (buat / ubah) + data, foto opsional" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="220" as="sourcePoint"/><mxPoint x="460" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="Auth, akun aktif, sesi dan role admin/staff" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="460" y="275" as="sourcePoint"/><mxPoint x="760" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Teruskan request terotorisasi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="760" y="330" as="sourcePoint"/><mxPoint x="1080" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="Validasi field, master, jumlah, kondisi, status, foto" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="385" as="sourcePoint"/><mxPoint x="1080" y="405" as="targetPoint"/><Array as="points"><mxPoint x="1105" y="385"/><mxPoint x="1105" y="405"/></Array></mxGeometry></mxCell>
+        <mxCell id="m5" value="Jika edit: pastikan jumlah tidak kurang dari unit terpinjam" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="440" as="sourcePoint"/><mxPoint x="1405" y="440" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="Simpan file foto privat jika ada" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="495" as="sourcePoint"/><mxPoint x="1725" y="495" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="INSERT / UPDATE aset; isi created_by / updated_by" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="550" as="sourcePoint"/><mxPoint x="1405" y="550" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="INSERT asset_histories untuk perubahan yang relevan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="605" as="sourcePoint"/><mxPoint x="1405" y="605" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="Jika transaksi gagal, hapus file foto baru" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="660" as="sourcePoint"/><mxPoint x="1725" y="660" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="Redirect detail / daftar + status berhasil / error" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="715" as="sourcePoint"/><mxPoint x="460" y="715" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="POST /aset/{id}/hapus" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="770" as="sourcePoint"/><mxPoint x="1080" y="770" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Catat aksi hapus; soft delete aset (relasi tetap terjaga)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="825" as="sourcePoint"/><mxPoint x="1405" y="825" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="GET barcode / scan / cetak label" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="880" as="sourcePoint"/><mxPoint x="460" y="880" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="Cari aset / validasi kode; hasilkan Code 128 atau label" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="935" as="sourcePoint"/><mxPoint x="1725" y="935" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m15" value="Kirim hasil / foto hanya setelah autentikasi" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1080" y="990" as="sourcePoint"/><mxPoint x="460" y="990" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-stock" name="5 - Mutasi stok">
+    <mxGraphModel dx="1900" dy="1120" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1120" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — MUTASI STOK (ADMIN)&#xa;Perubahan jumlah, mutasi, dan riwayat disimpan dalam satu transaksi dengan penguncian baris aset" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1700" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="70" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="380" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth + admin role" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="690" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="StockMovementController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="990" y="110" width="210" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Database (asset / movement / history)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1320" y="110" width="230" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="165" as="sourcePoint"/><mxPoint x="160" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="470" y="165" as="sourcePoint"/><mxPoint x="470" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="780" y="165" as="sourcePoint"/><mxPoint x="780" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="165" as="sourcePoint"/><mxPoint x="1095" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1435" y="165" as="sourcePoint"/><mxPoint x="1435" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="POST /mutasi: jenis, aset, alasan, jumlah, tanggal" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="160" y="220" as="sourcePoint"/><mxPoint x="470" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="Pastikan pengguna admin; validasi field dan aturan alasan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="470" y="275" as="sourcePoint"/><mxPoint x="780" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Teruskan request terotorisasi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="780" y="330" as="sourcePoint"/><mxPoint x="1095" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="BEGIN; SELECT asset FOR UPDATE" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="385" as="sourcePoint"/><mxPoint x="1435" y="385" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Baca jumlah aset dan total unit yang sedang dipinjam" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="440" as="sourcePoint"/><mxPoint x="1435" y="440" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="Hitung unit tersedia; validasi jumlah / batas 100.000" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="495" as="sourcePoint"/><mxPoint x="1095" y="515" as="targetPoint"/><Array as="points"><mxPoint x="1120" y="495"/><mxPoint x="1120" y="515"/></Array></mxGeometry></mxCell>
+        <mxCell id="m7" value="Gagal aturan: rollback via exception; tampilkan error" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="550" as="sourcePoint"/><mxPoint x="470" y="550" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="INSERT stock_movements (qty_before, qty_after, pembuat)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="605" as="sourcePoint"/><mxPoint x="1435" y="605" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="UPDATE assets.quantity; atur status jika stok nol / kembali masuk" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="660" as="sourcePoint"/><mxPoint x="1435" y="660" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="INSERT asset_histories untuk jumlah dan status bila berubah" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="715" as="sourcePoint"/><mxPoint x="1435" y="715" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="COMMIT transaksi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="770" as="sourcePoint"/><mxPoint x="1435" y="770" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Muat aset untuk pesan sukses; redirect /mutasi" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="825" as="sourcePoint"/><mxPoint x="470" y="825" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="Tampilkan sukses + peringatan / info bila aset dinonaktifkan / aktif kembali" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="470" y="880" as="sourcePoint"/><mxPoint x="160" y="880" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-opname" name="6 - Stok opname">
+    <mxGraphModel dx="1900" dy="1320" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1320" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — STOK OPNAME (ADMIN)&#xa;Buat snapshot, simpan pemeriksaan fisik, lalu selesaikan dengan atau tanpa menerapkan penyesuaian" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1750" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="340" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Admin middleware" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="620" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="StockOpnameController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="910" y="110" width="210" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Database: opname / item / aset" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1220" y="110" width="220" height="55" as="geometry" /></mxCell>
+        <mxCell id="hist" value="asset_histories" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1550" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="165" as="sourcePoint"/><mxPoint x="150" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="430" y="165" as="sourcePoint"/><mxPoint x="430" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="715" y="165" as="sourcePoint"/><mxPoint x="715" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="165" as="sourcePoint"/><mxPoint x="1015" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1330" y="165" as="sourcePoint"/><mxPoint x="1330" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1645" y="165" as="sourcePoint"/><mxPoint x="1645" y="1210" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="POST /opname: nama, tanggal, cakupan lokasi, catatan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="220" as="sourcePoint"/><mxPoint x="430" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="Auth + role: admin (middleware juga mengizinkan Pengelola)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="430" y="275" as="sourcePoint"/><mxPoint x="715" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Validasi form; cek sesi berjalan pada cakupan yang sama" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="330" as="sourcePoint"/><mxPoint x="1330" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="Ambil aset aktif untuk lokasi; hitung jumlah unit dipinjam" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="385" as="sourcePoint"/><mxPoint x="1330" y="385" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Jika sesi sudah berjalan / tidak ada aset aktif: validasi error" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="440" as="sourcePoint"/><mxPoint x="430" y="440" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="BEGIN; INSERT stock_opnames" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="495" as="sourcePoint"/><mxPoint x="1330" y="495" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="INSERT snapshot stock_opname_items: qty, borrowed, condition" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="550" as="sourcePoint"/><mxPoint x="1330" y="550" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="COMMIT; redirect daftar sesi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="605" as="sourcePoint"/><mxPoint x="1330" y="605" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="PUT /opname/{id}/item/{item}: jumlah + kondisi fisik" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="680" as="sourcePoint"/><mxPoint x="430" y="680" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="Pastikan item milik sesi; sesi berstatus berjalan; validasi data" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="735" as="sourcePoint"/><mxPoint x="1330" y="735" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="UPDATE hasil fisik, checked_by, checked_at" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="790" as="sourcePoint"/><mxPoint x="1330" y="790" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Kembalikan selisih dan progress pemeriksaan" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="845" as="sourcePoint"/><mxPoint x="430" y="845" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="POST /opname/{id}/selesai + konfirmasi + opsi apply" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="920" as="sourcePoint"/><mxPoint x="430" y="920" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="Pastikan konfirmasi diterima dan minimal satu item dicek" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="975" as="sourcePoint"/><mxPoint x="1330" y="975" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m15" value="BEGIN; kunci sesi; jika apply, kunci aset tiap item tercek" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="1030" as="sourcePoint"/><mxPoint x="1330" y="1030" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m16" value="Untuk perubahan valid: update jumlah / kondisi, catat tiap perubahan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="1085" as="sourcePoint"/><mxPoint x="1645" y="1085" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m17" value="Tandai selesai, finished_by / at, adjustments_applied; COMMIT" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="1140" as="sourcePoint"/><mxPoint x="1330" y="1140" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m18" value="Tampilkan ringkasan penyesuaian dan item dilewati" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1015" y="1195" as="sourcePoint"/><mxPoint x="150" y="1195" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-report" name="7 - Laporan">
+    <mxGraphModel dx="1900" dy="1050" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1050" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — DASHBOARD, RIWAYAT, DAN LAPORAN&#xa;Halaman laporan membaca data sesuai filter; ekspor tersedia untuk cetak, PDF, Excel, Word, dan CSV" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1750" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="360" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth + admin role" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="660" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="Dashboard / ReportController" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="970" y="110" width="210" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1300" y="110" width="180" height="55" as="geometry" /></mxCell>
+        <mxCell id="exp" value="View / Exporter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1600" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="165" as="sourcePoint"/><mxPoint x="150" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="450" y="165" as="sourcePoint"/><mxPoint x="450" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="755" y="165" as="sourcePoint"/><mxPoint x="755" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1075" y="165" as="sourcePoint"/><mxPoint x="1075" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1390" y="165" as="sourcePoint"/><mxPoint x="1390" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l6" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1695" y="165" as="sourcePoint"/><mxPoint x="1695" y="1010" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="GET /dashboard atau /riwayat" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="220" as="sourcePoint"/><mxPoint x="450" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="Pastikan admin dan sesi valid" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="450" y="275" as="sourcePoint"/><mxPoint x="755" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Ambil agregat / riwayat sesuai filter halaman" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="330" as="sourcePoint"/><mxPoint x="1390" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="Dashboard / data riwayat" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1390" y="385" as="sourcePoint"/><mxPoint x="970" y="385" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Render halaman" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="440" as="sourcePoint"/><mxPoint x="450" y="440" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="GET /laporan dengan jenis, tanggal, kategori, lokasi, opname" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="515" as="sourcePoint"/><mxPoint x="450" y="515" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="Validasi jenis; susun baris dan filter laporan" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="570" as="sourcePoint"/><mxPoint x="1390" y="570" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="Baca aset / pinjaman / mutasi / opname / riwayat" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1390" y="625" as="sourcePoint"/><mxPoint x="970" y="625" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="Render laporan + pilihan cetak / ekspor" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="680" as="sourcePoint"/><mxPoint x="450" y="680" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="GET /laporan/cetak, /pdf, /excel, /word, /csv" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="150" y="755" as="sourcePoint"/><mxPoint x="450" y="755" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m11" value="Ambil data terfilter; bukti foto opsional (dibatasi)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="810" as="sourcePoint"/><mxPoint x="1390" y="810" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Kirim data ke view / PDF / Excel / Word / CSV writer" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="865" as="sourcePoint"/><mxPoint x="1695" y="865" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="HTML cetak atau unduhan file" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="970" y="920" as="sourcePoint"/><mxPoint x="450" y="920" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="Tampilkan / unduh laporan" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="450" y="975" as="sourcePoint"/><mxPoint x="150" y="975" as="targetPoint"/></mxGeometry></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="seq-profile-admin" name="8 - Profil dan admin">
+    <mxGraphModel dx="1700" dy="1120" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1120" math="0" shadow="0">
+      <root>
+        <mxCell id="0" /><mxCell id="1" parent="0" />
+        <mxCell id="title" value="SEQUENCE — PROFIL, AKUN PENGGUNA, DAN DATA MASTER&#xa;Perubahan sandi membatalkan sesi lain; hak kelola akun dibatasi ke Admin, master data mengikuti middleware role admin" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=21;fontStyle=1;fontColor=#1f2937;" vertex="1" parent="1"><mxGeometry x="40" y="20" width="1600" height="65" as="geometry" /></mxCell>
+        <mxCell id="u" value="Pengguna / Admin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="60" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="web" value="Browser / Form" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="370" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="mw" value="Auth / role / Gate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="680" y="110" width="190" height="55" as="geometry" /></mxCell>
+        <mxCell id="ctrl" value="Profile / User / Master Controller" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="980" y="110" width="230" height="55" as="geometry" /></mxCell>
+        <mxCell id="db" value="Users / Categories / Locations DB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="1330" y="110" width="250" height="55" as="geometry" /></mxCell>
+        <mxCell id="l1" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="155" y="165" as="sourcePoint"/><mxPoint x="155" y="1020" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l2" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="165" as="sourcePoint"/><mxPoint x="465" y="1020" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l3" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="775" y="165" as="sourcePoint"/><mxPoint x="775" y="1020" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l4" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="165" as="sourcePoint"/><mxPoint x="1095" y="1020" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="l5" style="edgeStyle=none;html=1;dashed=1;strokeColor=#999;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1455" y="165" as="sourcePoint"/><mxPoint x="1455" y="1020" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m1" value="GET /profil" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="155" y="220" as="sourcePoint"/><mxPoint x="465" y="220" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="Pastikan authenticated + akun aktif + sesi current" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="275" as="sourcePoint"/><mxPoint x="775" y="275" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="Ambil data profil pengguna saat ini" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="330" as="sourcePoint"/><mxPoint x="1455" y="330" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="POST /profil/password: sandi saat ini + sandi baru + konfirmasi" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="155" y="400" as="sourcePoint"/><mxPoint x="465" y="400" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="Validasi current_password, minimal 8, confirmed, berbeda" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="455" as="sourcePoint"/><mxPoint x="1095" y="475" as="targetPoint"/><Array as="points"><mxPoint x="1120" y="455"/><mxPoint x="1120" y="475"/></Array></mxGeometry></mxCell>
+        <mxCell id="m6" value="Hash sandi baru; reset must_change_password; naikkan session_version dan remember_token" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="510" as="sourcePoint"/><mxPoint x="1455" y="510" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="Pertahankan sesi ini; sesi perangkat lain tidak berlaku" style="edgeStyle=none;html=1;dashed=1;endArrow=block;endFill=0;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="565" as="sourcePoint"/><mxPoint x="465" y="565" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="Admin: POST /pengguna (buat/ubah/hapus)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="155" y="640" as="sourcePoint"/><mxPoint x="465" y="640" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m9" value="Gate manage-users: hanya role admin" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="695" as="sourcePoint"/><mxPoint x="775" y="695" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m10" value="Validasi role/email; lindungi akun sendiri dan admin aktif terakhir" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="750" as="sourcePoint"/><mxPoint x="1095" y="770" as="targetPoint"/><Array as="points"><mxPoint x="1120" y="750"/><mxPoint x="1120" y="770"/></Array></mxGeometry></mxCell>
+        <mxCell id="m11" value="Hapus ditolak jika akun punya aktivitas; nonaktifkan untuk menjaga riwayat" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="805" as="sourcePoint"/><mxPoint x="1455" y="805" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m12" value="Admin / Pengelola: POST /kategori dan /lokasi (tambah, ubah, hapus)" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="155" y="880" as="sourcePoint"/><mxPoint x="465" y="880" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m13" value="Role middleware admin; validasi dan periksa relasi data sebelum hapus" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="935" as="sourcePoint"/><mxPoint x="775" y="935" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m14" value="Simpan kategori / lokasi; kembalikan hasil ke halaman" style="edgeStyle=none;html=1;endArrow=block;endFill=1;fontSize=12;labelBackgroundColor=#fff;" edge="1" parent="1"><mxGeometry relative="1" as="geometry"><mxPoint x="1095" y="990" as="sourcePoint"/><mxPoint x="1455" y="990" as="targetPoint"/></mxGeometry></mxCell>
       </root>
     </mxGraphModel>
   </diagram>
