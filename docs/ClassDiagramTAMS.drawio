@@ -1,10 +1,10 @@
-<mxfile host="app.diagrams.net">
+<mxfile host="app.diagrams.net" pages="2">
   <diagram name="Class Diagram TAMS" id="xOosXaqb0ht72zHR8aMz">
-    <mxGraphModel dx="645" dy="376" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="645" dy="376" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;classDiagram\r\n    class User {\r\n        +int id\r\n        +string name\r\n        +string email\r\n        +string role\r\n        +bool is_active\r\n        +isAdmin() bool\r\n        +isPengelola() bool\r\n        +hasActivity() bool\r\n    }\r\n\r\n    class Category {\r\n        +int id\r\n        +string name\r\n        +string code_prefix\r\n        +assets()\r\n    }\r\n\r\n    class Location {\r\n        +int id\r\n        +int parent_id\r\n        +string name\r\n        +parent()\r\n        +children()\r\n        +assets()\r\n    }\r\n\r\n    class Asset {\r\n        +int id\r\n        +string asset_code\r\n        +string name\r\n        +int quantity\r\n        +string asset_condition\r\n        +string status\r\n        +int borrowed\r\n        +int available\r\n        +generateCode() string\r\n        +barcodeSvg() string\r\n    }\r\n\r\n    class Loan {\r\n        +int id\r\n        +int asset_id\r\n        +string borrower_name\r\n        +int quantity\r\n        +date loaned_at\r\n        +date due_at\r\n        +date returned_at\r\n        +scopeActive()\r\n        +bool is_overdue\r\n        +string status_label\r\n    }\r\n\r\n    class StockMovement {\r\n        +int id\r\n        +int asset_id\r\n        +string type\r\n        +string reason\r\n        +int quantity\r\n        +int qty_before\r\n        +int qty_after\r\n        +REASONS\r\n    }\r\n\r\n    class AssetHistory {\r\n        +int id\r\n        +int asset_id\r\n        +int user_id\r\n        +string action\r\n        +string field_name\r\n        +string old_value\r\n        +string new_value\r\n        +string action_label\r\n        +string change_text\r\n    }\r\n\r\n    class StockOpname {\r\n        +int id\r\n        +string code\r\n        +date opname_date\r\n        +string status\r\n        +bool adjustments_applied\r\n        +bool is_running\r\n        +generateCode() string\r\n        +items()\r\n    }\r\n\r\n    class StockOpnameItem {\r\n        +int id\r\n        +int system_qty\r\n        +int borrowed_qty\r\n        +int physical_qty\r\n        +string system_condition\r\n        +string physical_condition\r\n        +bool is_checked\r\n        +int expected_qty\r\n        +int difference\r\n        +string diff_label\r\n    }\r\n\r\n    Category \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Asset : category\r\n    Location \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Asset : location\r\n    Location \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; Location : parent_children\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Loan : loans\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockMovement : movements\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; AssetHistory : histories\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockOpnameItem : checked_in\r\n    StockOpname \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockOpnameItem : items\r\n    Location \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; StockOpname : location\r\n    User \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Loan : creator\r\n    User \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; AssetHistory : user&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="QrBwRw7Ec6dRtCYoXtig-1">
+        <UserObject label="" mermaidData="{&#xa;  &quot;data&quot;: &quot;classDiagram\r\n    class User {\r\n        +int id\r\n        +string name\r\n        +string email\r\n        +string role\r\n        +bool is_active\r\n        +isAdmin() bool\r\n        +isPengelola() bool\r\n        +hasActivity() bool\r\n    }\r\n\r\n    class Category {\r\n        +int id\r\n        +string name\r\n        +string code_prefix\r\n        +assets()\r\n    }\r\n\r\n    class Location {\r\n        +int id\r\n        +int parent_id\r\n        +string name\r\n        +parent()\r\n        +children()\r\n        +assets()\r\n    }\r\n\r\n    class Asset {\r\n        +int id\r\n        +string asset_code\r\n        +string name\r\n        +int quantity\r\n        +string asset_condition\r\n        +string status\r\n        +int borrowed\r\n        +int available\r\n        +generateCode() string\r\n        +barcodeSvg() string\r\n    }\r\n\r\n    class Loan {\r\n        +int id\r\n        +int asset_id\r\n        +string borrower_name\r\n        +int quantity\r\n        +date loaned_at\r\n        +date due_at\r\n        +date returned_at\r\n        +scopeActive()\r\n        +bool is_overdue\r\n        +string status_label\r\n    }\r\n\r\n    class StockMovement {\r\n        +int id\r\n        +int asset_id\r\n        +string type\r\n        +string reason\r\n        +int quantity\r\n        +int qty_before\r\n        +int qty_after\r\n        +REASONS\r\n    }\r\n\r\n    class AssetHistory {\r\n        +int id\r\n        +int asset_id\r\n        +int user_id\r\n        +string action\r\n        +string field_name\r\n        +string old_value\r\n        +string new_value\r\n        +string action_label\r\n        +string change_text\r\n    }\r\n\r\n    class StockOpname {\r\n        +int id\r\n        +string code\r\n        +date opname_date\r\n        +string status\r\n        +bool adjustments_applied\r\n        +bool is_running\r\n        +generateCode() string\r\n        +items()\r\n    }\r\n\r\n    class StockOpnameItem {\r\n        +int id\r\n        +int system_qty\r\n        +int borrowed_qty\r\n        +int physical_qty\r\n        +string system_condition\r\n        +string physical_condition\r\n        +bool is_checked\r\n        +int expected_qty\r\n        +int difference\r\n        +string diff_label\r\n    }\r\n\r\n    class LoanPhoto {\r\n        +int id\r\n        +int loan_id\r\n        +string stage\r\n        +string path\r\n        +int created_by\r\n        +loan()\r\n        +getUrlAttribute() string\r\n    }\r\n\r\n    class PasswordResetRequest {\r\n        +int id\r\n        +int user_id\r\n        +string email\r\n        +string message\r\n        +string status\r\n        +string requested_ip\r\n        +int handled_by\r\n        +datetime handled_at\r\n        +EXPIRE_DAYS\r\n        +scopePending()\r\n        +expireOld() int\r\n        +getStatusLabelAttribute() string\r\n        +getStatusColorAttribute() string\r\n    }\r\n    Loan \&quot;1\&quot; --&gt; \&quot;0..*\&quot; LoanPhoto : photos\r\n    User \&quot;1\&quot; --&gt; \&quot;0..*\&quot; PasswordResetRequest : user\r\n    User \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; PasswordResetRequest : handler\r\n    User \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; LoanPhoto : created_by\r\n    Category \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Asset : category\r\n    Location \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Asset : location\r\n    Location \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; Location : parent_children\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Loan : loans\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockMovement : movements\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; AssetHistory : histories\r\n    Asset \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockOpnameItem : checked_in\r\n    StockOpname \&quot;1\&quot; --&gt; \&quot;0..*\&quot; StockOpnameItem : items\r\n    Location \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; StockOpname : location\r\n    User \&quot;1\&quot; --&gt; \&quot;0..*\&quot; Loan : creator\r\n    User \&quot;0..1\&quot; --&gt; \&quot;0..*\&quot; AssetHistory : user&quot;,&#xa;  &quot;config&quot;: null&#xa;}" id="QrBwRw7Ec6dRtCYoXtig-1">
           <mxCell connectable="0" parent="1" style="group;transparentBounds=1;editIcon=1;lockedGroup=0;groupPadding=10;" vertex="1">
             <mxGeometry as="geometry" />
           </mxCell>
@@ -471,6 +471,106 @@
         <mxCell id="IGI9-ObMrWkNpwlBJOf7-15" parent="IGI9-ObMrWkNpwlBJOf7-1" style="line;strokeWidth=1;fillColor=none;spacingLeft=3;spacingRight=3;rotatable=0;points=[];strokeColor=inherit;" value="+getIsCheckedAttribute(): bool" vertex="1">
           <mxGeometry height="24" width="276" y="372" as="geometry" />
         </mxCell>
+        <mxCell id="loanPhotoClass" value="&lt;b&gt;LoanPhoto&lt;/b&gt;" style="swimlane;html=1;fontStyle=1;fontSize=16;align=center;verticalAlign=middle;horizontal=1;startSize=48;fillColor=#ECECFF;strokeColor=#9370DB;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="740" width="300" height="264" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoFieldId" value="+int id" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="60" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoFieldLoanId" value="+int loan_id" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="84" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoFieldStage" value="+string stage" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="108" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoFieldPath" value="+string path" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="132" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoFieldCreator" value="+int created_by" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="156" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoDivider" style="line;strokeWidth=1;fillColor=none;spacingLeft=3;spacingRight=3;rotatable=0;strokeColor=inherit;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="180" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoMethodLoan" value="+loan()" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="204" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoMethodUrl" value="+getUrlAttribute(): string" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="loanPhotoClass">
+          <mxGeometry y="228" width="300" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetClass" value="&lt;b&gt;PasswordResetRequest&lt;/b&gt;" style="swimlane;html=1;fontStyle=1;fontSize=16;align=center;verticalAlign=middle;horizontal=1;startSize=48;fillColor=#ECECFF;strokeColor=#9370DB;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;" vertex="1" parent="1">
+          <mxGeometry x="1510" y="320" width="350" height="408" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldId" value="+int id" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="60" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldUserId" value="+int user_id" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="84" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldEmail" value="+string email" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="108" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldMessage" value="+string message" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="132" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldStatus" value="+string status" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="156" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldIp" value="+string requested_ip" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="180" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldHandler" value="+int handled_by" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="204" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetFieldHandledAt" value="+datetime handled_at" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="228" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetDivider" style="line;strokeWidth=1;fillColor=none;spacingLeft=3;spacingRight=3;rotatable=0;strokeColor=inherit;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="252" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetMethodExpiry" value="+EXPIRE_DAYS" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="276" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetMethodPending" value="+scopePending()" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="300" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetMethodExpireOld" value="+expireOld(): int" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="324" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetMethodStatusLabel" value="+getStatusLabelAttribute(): string" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="348" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetMethodStatusColor" value="+getStatusColorAttribute(): string" style="text;fontSize=16;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=10;spacingRight=12;" vertex="1" parent="passwordResetClass">
+          <mxGeometry y="372" width="350" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="loanPhotoRelation" value="photos (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=#333333;" edge="1" parent="1" source="QrBwRw7Ec6dRtCYoXtig-38" target="loanPhotoClass">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetUserRelation" value="user (1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=#333333;exitX=1;exitY=0.35;entryX=0;entryY=0.35;" edge="1" parent="1" source="QrBwRw7Ec6dRtCYoXtig-2" target="passwordResetClass">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="passwordResetHandlerRelation" value="handler (0..1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=#333333;exitX=1;exitY=0.65;entryX=0;entryY=0.75;" edge="1" parent="1" source="QrBwRw7Ec6dRtCYoXtig-2" target="passwordResetClass">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1370" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="loanPhotoCreatorRelation" value="created_by (0..1 : 0..*)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=#333333;exitX=1;exitY=0.85;entryX=0;entryY=0.55;" edge="1" parent="1" source="QrBwRw7Ec6dRtCYoXtig-2" target="loanPhotoClass">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1090" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="RKvGRS4K58QV3L7IGQVe" name="Halaman-2">
+    <mxGraphModel dx="774" dy="451" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
       </root>
     </mxGraphModel>
   </diagram>
