@@ -15,7 +15,7 @@ class ScanController extends Controller
     // Mencari aset dari kode hasil scan (dipanggil lewat JavaScript)
     public function find(Request $request)
     {
-        $code = strtoupper(trim((string) $request->query('kode', '')));
+        $code = Asset::normalizeCode((string) $request->query('kode', ''));
 
         if (! Asset::isValidCode($code)) {
             return response()->json(['found' => false, 'message' => 'Format kode tidak dikenali.']);

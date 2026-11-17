@@ -93,6 +93,20 @@ class Asset extends Model
         return (bool) preg_match('/^[A-Z0-9-]{3,30}$/', $code);
     }
 
+    // Menyeragamkan kode ke jumlah digit yang berlaku. Kode lama (misalnya TCH-0001 dari label yang
+    // sudah tercetak) dibaca sebagai TCH-000001, sehingga label lama tetap bisa dipindai.
+    public static function normalizeCode(string $raw): string
+    {
+        $code   = strtoupper(trim($raw));
+        $digits = (int) config('tams.asset_digits', 6);
+
+        if (preg_match('/^([A-Z0-9]+)-(\d+)$/', $code, $m)) {
+            return $m[1] . '-' . str_pad($m[2], $digits, '0', STR_PAD_LEFT);
+        }
+
+        return $code;
+    }
+
     // Gambar barcode Code 128 (SVG, vektor) dari kode aset
     public function barcodeSvg(int $widthFactor = 2, int $height = 70): string
     {

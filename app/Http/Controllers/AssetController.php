@@ -20,9 +20,14 @@ class AssetController extends Controller
     {
         $assets = Asset::with(['category', 'location'])
             ->withSum(['loans as borrowed_sum' => fn ($q) => $q->whereNull('returned_at')], 'quantity')
-            ->when($request->q, fn ($q, $v) => $q->where(
-                fn ($w) => $w->where('asset_code', 'like', "%{$v}%")->orWhere('name', 'like', "%{$v}%")
-            ))
+            ->when($request->q, function ($q, $v) {
+                $alt = Asset::normalizeCode($v);
+
+                $q->where(fn ($w) => $w
+                    ->where('asset_code', 'like', "%{$v}%")
+                    ->orWhere('asset_code', 'like', "%{$alt}%")
+                    ->orWhere('name', 'like', "%{$v}%"));
+            })
             ->when($request->category_id, fn ($q, $v) => $q->where('category_id', $v))
             ->when($request->location_id, fn ($q, $v) => $q->where('location_id', $v))
             ->when($request->condition, fn ($q, $v) => $q->where('asset_condition', $v))
