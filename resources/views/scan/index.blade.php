@@ -18,7 +18,7 @@
 
             <div class="input-group mb-3">
                 <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
-                <input type="text" id="kode" class="form-control scan-input" placeholder="TCH-0001"
+                <input type="text" id="kode" class="form-control scan-input" placeholder="TCH-000000"
                        autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="30">
                 <button class="btn btn-primary" id="btnCari" type="button">Cari</button>
             </div>

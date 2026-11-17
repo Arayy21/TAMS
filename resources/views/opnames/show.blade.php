@@ -307,8 +307,16 @@
 
     function say(text, cls) { info.className = 'form-text ' + (cls || ''); info.textContent = text; }
 
+    var DIGITS = @json((int) config('tams.asset_digits', 6));
+
+    // Kode lama 4 digit dibaca sebagai 6 digit
+    function normalizeCode(raw) {
+        var c = (raw || '').trim().toUpperCase(), m = c.match(/^([A-Z0-9]+)-(\d+)$/);
+        return m ? m[1] + '-' + '0'.repeat(Math.max(0, DIGITS - m[2].length)) + m[2] : c;
+    }
+
     function locate(raw) {
-        var code = (raw || '').trim().toUpperCase();
+        var code = normalizeCode(raw);
         if (! code) return;
 
         var tr = Array.prototype.find.call(document.querySelectorAll('tr.item-row'), function (r) { return r.dataset.code === code; });
