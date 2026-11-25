@@ -71,6 +71,26 @@
         <input type="date" name="purchase_date" value="{{ old('purchase_date', optional($a->purchase_date ?? null)->format('Y-m-d')) }}" class="form-control @error('purchase_date') is-invalid @enderror">
         @error('purchase_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
+    <div class="col-md-6">
+        @php $typeRequired = ! $a || $a->asset_type; @endphp
+        <label class="form-label">Jenis Aset @if ($typeRequired)<span class="text-danger">*</span>@endif</label>
+        <select name="asset_type" class="form-select @error('asset_type') is-invalid @enderror" @if ($typeRequired) required @endif>
+            @if (! $typeRequired)
+                <option value="">Belum ditentukan</option>
+            @else
+                <option value="">Pilih jenis aset</option>
+            @endif
+            @foreach (\App\Models\Asset::TYPES as $k => $v)
+                <option value="{{ $k }}" @selected(old('asset_type', $a->asset_type ?? '') === $k)>{{ $v }}</option>
+            @endforeach
+        </select>
+        @error('asset_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <div class="form-text">
+            @foreach (\App\Models\Asset::TYPE_HINTS as $k => $hint)
+                <div><strong>{{ \App\Models\Asset::TYPES[$k] }}</strong>: {{ $hint }}</div>
+            @endforeach
+        </div>
+    </div>
 
     <div class="col-12">
         <label class="form-label">Keterangan <span class="text-muted">(opsional)</span></label>

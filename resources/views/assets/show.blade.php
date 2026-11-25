@@ -30,6 +30,7 @@
                     <h2 class="h4 fw-bold mb-2">{{ $asset->name }}</h2>
                     <span class="badge rounded-pill text-bg-{{ $asset->condition_color }}">{{ ucfirst($asset->asset_condition) }}</span>
                     <span class="badge rounded-pill text-bg-{{ $asset->status_color }}">{{ ucfirst($asset->status) }}</span>
+                    <span class="badge rounded-pill text-bg-{{ $asset->type_color }} {{ $asset->asset_type ? '' : 'border' }}" title="{{ $asset->type_hint }}">{{ $asset->type_label }}</span>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('assets.edit', $asset) }}" class="btn btn-primary btn-sm">Edit</a>
@@ -62,6 +63,7 @@
                         @foreach ([
                             'Kode Aset'         => $asset->asset_code,
                             'Kategori'          => $asset->category->name,
+                            'Jenis Aset'        => $asset->type_label,
                             'Lokasi'            => $path,
                             'Jumlah Unit'       => $asset->quantity . ' (tersedia ' . $asset->available . ')',
                             'Nomor Seri'        => $asset->serial_number ?? '-',
