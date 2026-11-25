@@ -10,9 +10,20 @@ class Asset extends Model
 {
     use SoftDeletes;
 
+    // Jenis aset. Nama tampilan dan penjelasan ada di sini agar mudah diubah di satu tempat.
+    public const TYPES = [
+        'tetap'   => 'Aset Tetap',
+        'dinamis' => 'Aset Dinamis',
+    ];
+
+    public const TYPE_HINTS = [
+        'tetap'   => 'Berumur panjang dan umumnya menetap di satu tempat (contoh: meja, lemari, AC).',
+        'dinamis' => 'Dapat berpindah tempat atau dipinjamkan (contoh: laptop, proyektor, terminal colokan).',
+    ];
+
     protected $fillable = [
         'asset_code', 'name', 'category_id', 'location_id', 'quantity',
-        'asset_condition', 'status', 'description',
+        'asset_condition', 'status', 'asset_type', 'description',
         'serial_number', 'purchase_date', 'photo', 'created_by', 'updated_by',
     ];
 
@@ -54,6 +65,22 @@ class Asset extends Model
         return $this->status === 'aktif' ? 'primary' : 'secondary';
     }
 
+    // Jenis aset: label, warna badge, dan penjelasan singkat
+    public function getTypeLabelAttribute(): string
+    {
+        return self::TYPES[$this->asset_type ?? ''] ?? 'Belum ditentukan';
+    }
+
+    public function getTypeColorAttribute(): string
+    {
+        return ['tetap' => 'dark', 'dinamis' => 'info'][$this->asset_type ?? ''] ?? 'light';
+    }
+
+    public function getTypeHintAttribute(): string
+    {
+        return self::TYPE_HINTS[$this->asset_type ?? ''] ?? 'Jenis aset belum ditentukan. Tetapkan lewat tombol Edit.';
+    }
+
     // Jumlah unit yang sedang dipinjam
     public function getBorrowedAttribute(): int
     {
@@ -74,12 +101,12 @@ class Asset extends Model
             : null;
     }
 
-    // Kode berikutnya, contoh TCH-0001. Nomor diambil dari angka terbesar yang pernah ada,
+    // Kode berikutnya, contoh TCH-000001. Nomor diambil dari angka terbesar yang pernah ada,
     // termasuk aset yang sudah dihapus, sehingga nomor tidak dipakai ulang.
     public static function generateCode(): string
     {
         $prefix = config('tams.asset_prefix', 'TCH');
-        $digits = (int) config('tams.asset_digits', 4);
+        $digits = (int) config('tams.asset_digits', 6);
 
         $max = (int) static::withTrashed()
             ->max(DB::raw("CAST(SUBSTRING_INDEX(asset_code, '-', -1) AS UNSIGNED)"));

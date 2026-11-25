@@ -32,6 +32,13 @@ class AssetController extends Controller
             ->when($request->location_id, fn ($q, $v) => $q->where('location_id', $v))
             ->when($request->condition, fn ($q, $v) => $q->where('asset_condition', $v))
             ->when($request->status, fn ($q, $v) => $q->where('status', $v))
+            ->when($request->asset_type, function ($q, $v) {
+                if ($v === 'belum') {
+                    $q->whereNull('asset_type');
+                } elseif (isset(Asset::TYPES[$v])) {
+                    $q->where('asset_type', $v);
+                }
+            })
             ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
@@ -146,7 +153,7 @@ class AssetController extends Controller
             ]);
         }
 
-        $asset->fill($this->validated($request));
+        $asset->fill($this->validated($request, $asset));
 
         $oldPhoto = $asset->photo;
         $newPath  = null;
@@ -225,8 +232,12 @@ class AssetController extends Controller
 
     // ---------- helper ----------
 
-    private function validated(Request $request): array
+    private function validated(Request $request, ?Asset $asset = null): array
     {
+        // Jenis aset wajib untuk aset baru dan aset yang sudah punya jenis.
+        // Aset lama yang belum punya jenis boleh dibiarkan kosong dulu.
+        $typeRule = ($asset && ! $asset->asset_type ? 'nullable' : 'required') . '|in:' . implode(',', array_keys(Asset::TYPES));
+
         $v = $request->validate([
             'name'            => 'required|string|max:150',
             'category_id'     => 'required|exists:categories,id',
@@ -234,6 +245,7 @@ class AssetController extends Controller
             'quantity'        => 'required|integer|min:0|max:100000',
             'asset_condition' => 'required|in:baik,rusak,perbaikan',
             'status'          => 'required|in:aktif,nonaktif',
+            'asset_type'      => $typeRule,
             'description'     => 'nullable|string|max:1000',
             'serial_number'   => 'nullable|string|max:100',
             'purchase_date'   => 'nullable|date',
@@ -241,12 +253,14 @@ class AssetController extends Controller
             'photo.*'         => 'image|mimes:jpg,jpeg,png,webp|max:5120|dimensions:max_width=8000,max_height=8000',
             'remove_photo'    => 'nullable|boolean',
         ], [
-            'photo.max'          => 'Hanya 1 foto yang dapat dilampirkan.',
-            'photo.*.uploaded'   => 'Foto gagal diunggah. Ukurannya mungkin melebihi batas server.',
-            'photo.*.image'      => 'File harus berupa gambar.',
-            'photo.*.mimes'      => 'Format foto harus JPG, PNG, atau WebP.',
-            'photo.*.max'        => 'Ukuran foto maksimal 5 MB.',
-            'photo.*.dimensions' => 'Resolusi foto terlalu besar (maksimal 8000 x 8000 piksel).',
+            'asset_type.required' => 'Pilih jenis aset (tetap atau dinamis).',
+            'asset_type.in'       => 'Jenis aset tidak valid.',
+            'photo.max'           => 'Hanya 1 foto yang dapat dilampirkan.',
+            'photo.*.uploaded'    => 'Foto gagal diunggah. Ukurannya mungkin melebihi batas server.',
+            'photo.*.image'       => 'File harus berupa gambar.',
+            'photo.*.mimes'       => 'Format foto harus JPG, PNG, atau WebP.',
+            'photo.*.max'         => 'Ukuran foto maksimal 5 MB.',
+            'photo.*.dimensions'  => 'Resolusi foto terlalu besar (maksimal 8000 x 8000 piksel).',
         ]);
 
         return Arr::except($v, ['photo', 'remove_photo']);
@@ -279,6 +293,17 @@ class AssetController extends Controller
             if ($field === 'photo') {
                 $msg = $new === null ? 'Foto aset dihapus' : (! empty($old['photo']) ? 'Foto aset diganti' : 'Foto aset ditambahkan');
                 $this->log($asset, 'update', null, null, null, $msg);
+                continue;
+            }
+
+            // Perubahan jenis aset dicatat dengan nama tampilan lama dan baru
+            if ($field === 'asset_type') {
+                $this->log(
+                    $asset, 'update', 'asset_type',
+                    Asset::TYPES[$old['asset_type'] ?? ''] ?? null,
+                    Asset::TYPES[$new ?? ''] ?? null,
+                    'Jenis aset diubah'
+                );
                 continue;
             }
 
